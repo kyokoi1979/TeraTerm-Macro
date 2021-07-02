@@ -1,0 +1,2 @@
+#表示名	ログインIP①	OS種別①	ログインユーザ①	ログインパスワード①	ログインIP②	OS種別②	ログインユーザ②	ユーザパスワード②
+RHEL8	10.100.100.11	RHEL	root	password	10.100.100.12	RHEL	root	password2

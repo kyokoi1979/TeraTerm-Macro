@@ -1,0 +1,118 @@
+;; ログイン用マクロ.ttl
+;;
+;;　更新履歴
+;;　2016/04/26 iLOに対応(ユーザ名はsimusr固定)
+;;  2016/09/01 ESX6.0に対応
+;;             個別/一括を一つにまとめた
+;;
+;;
+;; マクロと同じディレクトリにあるホストリスト、
+;; コマンドリストを読み込み実行する。
+;;
+;; リストファイルが存在しない場合はダイアログを表示して選択する。
+;;
+;; [ デフォルト値 ]
+;; ホストリスト  : host.list
+;; コマンドリスト: command.list
+;; ログ保存先    : ログと同じ場所\log
+;;
+CMD       = 'command_'
+INI       = 'TERATERM.INI'
+TIMEOUT   = 60
+
+;; 認証方法
+;; password  ⇒ パスワード
+;; challenge ⇒ チャレンジレスポンス/キーボードインタラクティブ
+AUTHTYPE = 'password'
+;AUTHTYPE = 'challenge'
+
+;; 各OSのプロンプトを定義
+RHEL_PROMPT = '.*\]# |.*\]$ '
+ESX_PROMPT  = '~ #|^/.*#|.*\] '
+iDRAC_PROMPT = '\/admin1->|racadm>>'
+VC_PROMPT   = '^->'
+OA_PROMPT   = '^.*oa[0-9]*>'
+FCSW_PROMPT = '.*:admin>'
+VNX_PROMPT  = '.*#'
+iLO_PROMPT  = '.*hpiLO.*'
+BIGIP_PROMPT = '[admin\@.*# '
+
+;; リストファイルはマクロと同じディレクトリから取得
+getdate Log_Getdate
+strcopy Log_Getdate 1 4 Log_Year
+strcopy Log_Getdate 6 2 Log_Mon
+strcopy Log_Getdate 9 2 Log_Day
+
+getdir CurrentDir
+CMD_DIR      = CurrentDir
+LOGSPATH     = CurrentDir
+strconcat CMD_DIR '\cmdlist\'
+strconcat CMD_DIR CMD
+strconcat LOGSPATH '\log\'
+foldercreate LOGSPATH
+
+strconcat LOGSPATH Log_Year
+strconcat LOGSPATH Log_Mon
+strconcat LOGSPATH Log_Day
+
+HOST_FILE = CurrentDir
+HOST      = 'host.list'
+makepath    HOST_FILE CurrentDir HOST
+PowerShell= 'C:\Windows\System32\WindowsPowerShell\v1.0\PowerShell.exe '
+strconcat   PS1 CurrentDir
+strconcat   PS1 '\sub\RDP.ps1'
+strconcat  PowerShell PS1 
+
+makepath INI_FILE     CurrentDir INI
+
+;; ログディレクトリ作成
+;; ディレクトリを作成できない場合、同名のファイルが存在する場合は終了
+filesearch LOGSPATH
+if result=1 then
+  foldersearch LOGSPATH
+  if result <> 1 then
+    sprintf2 msg '%s is a file.' LOGSPATH
+    messagebox msg ''
+    end
+  endif
+else
+  foldercreate LOGSPATH
+
+  if result <> 0 then
+    messagebox 'ログディレクトリを作成できません。' ''
+    end
+  endif
+endif
+
+inputbox '"作業名"を入力して下さい。' '"作業名"'
+str = inputstr
+
+;; 一括or個別ログインの選択
+strdim lst 2
+lst[0] = '個別'
+lst[1] = 'まとめて'
+listbox 'ログイン方法を選択してください。' 'ログイン方法' lst
+if result = -1 then ;; キャンセル
+  end
+elseif result = 0 then
+  mode = 1
+elseif result = 1 then
+  mode = 2
+endif
+
+;; ログファイル名用に日付・時間を取得
+getdate Str_Getdate
+strcopy Str_Getdate 1 4 Str_Year
+strcopy Str_Getdate 6 2 Str_Mon
+strcopy Str_Getdate 9 2 Str_Day
+
+gettime Str_Gettime
+strcopy Str_Gettime 1 2 Str_Hour
+strcopy Str_Gettime 4 2 Str_Min
+strcopy Str_Gettime 7 2 Str_Sec
+
+if mode = 1 then
+  include 'sub/個別.ttl'
+elseif mode = 2 then
+  include 'sub/一括.ttl'
+endif

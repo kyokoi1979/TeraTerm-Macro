@@ -1,0 +1,278 @@
+;; 個別.ttl
+;; 最終更新日: 2016/09/27
+;;
+;; ホストリストを読み込む
+;; ホストリストが存在しない場合はダイアログから選択
+getdir      CurrentDir
+HOST_FILE = CurrentDir
+HOST      = 'host.list'
+makepath    HOST_FILE CurrentDir HOST
+
+filesearch HOST_FILE
+if result = 0 then
+  filenamebox 'ホストリストを選択してください' 0
+  HOST_FILE = inputstr
+  fileopen HOST_LIST HOST_FILE 0
+else
+  fileopen HOST_LIST HOST_FILE 0
+endif
+
+;; ホストリストの行数を取得する。
+i = 0
+while
+  filereadln HOST_LIST HOST_LIST_LINE
+  if result=1 then
+    break
+  endif
+  i=i+1
+endwhile
+fileclose HOST_LIST
+
+;; 配列を作成
+strdim HOST_NAME i
+strdim HOST_IP_1 i
+strdim HOST_IP_2 i
+strdim HOST_OS_1 i
+strdim HOST_OS_2 i
+strdim HOST_USER_1 i
+strdim HOST_USER_2 i
+strdim HOST_PASS_1 i
+strdim HOST_PASS_2 i
+strdim PS i
+
+;; ホストファイルを読み込む
+fileopen HOST_LIST HOST_FILE 0
+i = 0
+while
+  filereadln HOST_LIST HOST_LIST_LINE
+  if result=1 then
+    break
+  endif
+ 
+; ホストファイルから情報を取得する
+  strmatch HOST_LIST_LINE '^#'
+  if result<>1 then
+    strsplit HOST_LIST_LINE '	'
+    HOST_NAME[i]    = Groupmatchstr1
+    HOST_IP_1[i]    = Groupmatchstr2
+    HOST_OS_1[i]    = Groupmatchstr3
+    HOST_USER_1[i]  = Groupmatchstr4
+    HOST_PASS_1[i]  = Groupmatchstr5
+    HOST_IP_2[i]    = Groupmatchstr6
+    HOST_OS_2[i]    = Groupmatchstr7
+    HOST_USER_2[i]  = Groupmatchstr8
+    HOST_PASS_2[i]  = Groupmatchstr9
+    
+    strmatch Groupmatchstr3 'ESX'
+    if result > 0 then
+      AUTHTYPE = 'challenge'
+    endif
+
+    i=i+1
+  endif
+endwhile
+ 
+;; ホスト選択画面を表示させる
+listbox 'ログインするホストを選択' 'Select HOST' HOST_NAME
+if result >= 0 then
+  HOST_CONNECT_NAME   = HOST_NAME[result]
+  HOST_CONNECT_IP_1   = HOST_IP_1[result]
+  HOST_CONNECT_OS_1   = HOST_OS_1[result]
+  HOST_CONNECT_USER_1 = HOST_USER_1[result]
+  HOST_CONNECT_PASS_1 = HOST_PASS_1[result]
+  HOST_CONNECT_IP_2   = HOST_IP_2[result]
+  HOST_CONNECT_OS_2   = HOST_OS_2[result]
+  HOST_CONNECT_USER_2 = HOST_USER_2[result]
+  HOST_CONNECT_PASS_2 = HOST_PASS_2[result]
+else
+  end
+endif
+
+COMMAND = HOST_CONNECT_IP_1
+strconcat COMMAND ':22 /ssh /2 /nosecuritywarning /auth='
+strconcat COMMAND AUTHTYPE
+strconcat COMMAND ' /user='
+strconcat COMMAND HOST_CONNECT_USER_1
+strconcat COMMAND ' /passwd='
+strconcat COMMAND HOST_CONNECT_PASS_1
+connect COMMAND
+
+restoresetup INI_FILE
+settitle HOST_CONNECT_NAME
+
+; ログの記録を行う
+
+strconcat LOGSPATH '\'
+LOGFILE = LOGSPATH
+strconcat LOGFILE HOST_CONNECT_NAME
+strconcat LOGFILE '_'
+strconcat LOGFILE Str_Year
+strconcat LOGFILE Str_Mon
+strconcat LOGFILE Str_Day
+strconcat LOGFILE '_'
+strconcat LOGFILE Str_Hour
+strconcat LOGFILE Str_Min
+strconcat LOGFILE Str_Sec
+strconcat LOGFILE '_'
+strconcat LOGFILE str
+strconcat LOGFILE '.log'
+
+logclose
+logopen LOGFILE 0 1 1 1 1
+
+wait '# ' '$ ' '] ' '>' ':admin>' '\/admin1->'
+
+sendln
+sendln
+
+; OSが RHEL を含む場合、各種コマンド実行、ユーザスイッチを行う
+strmatch HOST_CONNECT_OS_1 'RHEL'
+if result > 0 then
+  PROMPT = RHEL_PROMPT
+
+  waitregex PROMPT
+  sendln 'uname -a'
+
+  waitregex PROMPT
+  sendln 'id'
+
+  waitregex PROMPT
+  sendln 'date'
+
+  waitregex PROMPT
+  sendln 'df -h'
+
+  waitregex PROMPT
+  sendln 'w'
+
+  waitregex PROMPT
+  sendln 'ps auxww'
+
+  ; IP②が入力されている場合はSSHログインを実行する。
+  strlen HOST_CONNECT_IP_2
+  if result > 0 then
+
+    CMD = 'ssh -o "StrictHostKeyChecking no" '
+    strconcat CMD HOST_CONNECT_USER_2
+    strconcat CMD "@"
+    strconcat CMD HOST_CONNECT_IP_2
+    sendln CMD
+    waitregex 'Password' 'password' 'パスワード'
+    sendln HOST_CONNECT_PASS_2
+    waitregex '.*\]# |.*\]$ ' '~ #|^/.*#|.*\] ' '\/admin1->|racadm>>' '^->' '^.*oa[0-9]*>' '.*:admin>' '.*#' '.*hpiLO.*' '[admin\@.*# '
+
+    sendln
+  endif
+endif
+
+strmatch HOST_CONNECT_OS_1 'ESX'
+if result > 0 then
+  PROMPT = ESX_PROMPT
+
+  waitregex PROMPT
+  sendln 'uname -a'
+
+  waitregex PROMPT
+  sendln 'date'
+
+  waitregex PROMPT
+  sendln 'df -h'
+
+  waitregex PROMPT
+  sendln 'who'
+endif
+
+strmatch HOST_CONNECT_OS_1 'iDRAC'
+if result > 0 then
+  PROMPT = iDRAC_PROMPT
+
+  waitregex PROMPT
+  sendln
+endif
+
+strmatch HOST_CONNECT_OS_1 'VC'
+if result > 0 then
+  PROMPT = VC_PROMPT
+
+  waitregex PROMPT
+  sendln 'show enclosure'
+endif  
+
+strmatch HOST_CONNECT_OS_1 'OA'
+if result > 0 then
+  PROMPT = OA_PROMPT
+
+  waitregex PROMPT
+  sendln 'show enclosure info'
+endif  
+
+strmatch HOST_CONNECT_OS_1 'FCSW'
+if result > 0 then
+  PROMPT = FCSW_PROMPT
+
+  waitregex PROMPT
+  sendln 'switchshow'
+endif  
+
+strmatch HOST_CONNECT_OS_1 'VNX'
+if result > 0 then
+  PROMPT = VNX_PROMPT
+
+  waitregex PROMPT
+  sendln 'uname -a'
+
+  waitregex PROMPT
+  sendln 'date'
+endif
+
+strmatch HOST_CONNECT_OS_1 'iLO'
+if result > 0 then
+  PROMPT = iLO_PROMPT
+endif
+
+strmatch HOST_CONNECT_OS_1 'BIGIP'
+if result > 0 then
+  PROMPT = BIGIP_PROMPT
+endif
+
+
+; コマンドリストを読み込み実行する
+;; コマンドリストを読み込む
+;; コマンドリストが存在しない場合はダイアログから選択
+strconcat COMMAND_FILE CMD_DIR
+
+strlen HOST_CONNECT_OS_2
+if result > 0 then
+  strconcat COMMAND_FILE HOST_CONNECT_OS_2
+else
+  strconcat COMMAND_FILE HOST_CONNECT_OS_1
+endif 
+
+flushrecv
+sendln
+
+strconcat COMMAND_FILE '.list'
+filesearch COMMAND_FILE
+if result = 0 then
+  filenamebox 'コマンドリストを選択してください' 0
+  COMMAND_FILE = inputstr
+  fileopen COMMAND_LIST COMMAND_FILE 0
+else
+  fileopen COMMAND_LIST COMMAND_FILE 0
+endif
+
+fileopen COMMAND_LIST COMMAND_FILE 0
+
+while 1
+  filereadln COMMAND_LIST COMMAND_LIST_LINE
+  if result = 1 break
+
+  flushrecv
+  waitregex '.*\]# |.*\]$ ' '~ #|^/.*#|.*\] ' '\/admin1->|racadm>>' '^->' '^.*oa[0-9]*>' '.*:admin>' '.*#' '.*hpiLO.*' '[admin\@.*# '
+  sendln COMMAND_LIST_LINE
+endwhile
+fileclose COMMAND_LIST
+
+messagebox 'マクロの実行が完了しました' ''
+
+end

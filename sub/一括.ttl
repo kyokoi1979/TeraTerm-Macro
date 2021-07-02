@@ -1,0 +1,230 @@
+;; 一括.ttl
+
+;; 最終更新日: 2016/09/27
+;;
+;; ホストリストを読み込む
+;; ホストリストが存在しない場合はダイアログから選択
+getdir      CurrentDir
+HOST_FILE = CurrentDir
+HOST      = 'host.list'
+makepath    HOST_FILE    CurrentDir HOST
+
+filesearch HOST_FILE
+if result = 0 then
+  filenamebox 'ホストリストを選択してください' 0
+  HOST_FILE = inputstr
+  fileopen HOST_LIST HOST_FILE 0
+else
+  fileopen HOST_LIST HOST_FILE 0
+endif
+
+filereadln HOST_LIST HOST_LIST_LINE
+  while result = 0
+    ; ホストリストの最終行に到達したら終了する
+    strlen HOST_LIST_LINE
+    if result = 0 Goto END
+
+    ; ホストリストの先頭が#以外の場合、対象機器にログインする
+    strmatch HOST_LIST_LINE '^#'
+    if result<>1 call CONNECT_PROCESS
+
+  ; マクロ終了
+  :END
+    filereadln HOST_LIST HOST_LIST_LINE
+    endwhile
+    fileclose HOST_LIST
+    messagebox 'マクロの実行が完了しました' ''
+    end
+ 
+  ; 対象機器に接続する
+  :CONNECT_PROCESS
+    ; "," を区切りとして変数に代入する
+    strsplit HOST_LIST_LINE '	'
+    HOST_NAME    = Groupmatchstr1
+    HOST_IP_1    = Groupmatchstr2
+    HOST_OS_1    = Groupmatchstr3
+    HOST_USER_1  = Groupmatchstr4
+    HOST_PASS_1  = Groupmatchstr5
+    HOST_IP_2    = Groupmatchstr6
+    HOST_OS_2    = Groupmatchstr7
+    HOST_USER_2  = Groupmatchstr8
+    HOST_PASS_2  = Groupmatchstr9
+
+    strmatch HOST_OS_1 'ESX'
+    if result > 0 then
+      strsplit HOST_LIST_LINE '	'
+      AUTHTYPE = 'challenge'
+    endif
+
+    ; ログの記録を行う
+    strconcat LOGSPATH '\'
+    LOGFILE = LOGSPATH
+    strconcat LOGFILE HOST_NAME
+    strconcat LOGFILE '_'
+    strconcat LOGFILE Str_Year
+    strconcat LOGFILE Str_Mon
+    strconcat LOGFILE Str_Day
+    strconcat LOGFILE '_'
+    strconcat LOGFILE Str_Hour
+    strconcat LOGFILE Str_Min
+    strconcat LOGFILE Str_Sec
+    strconcat LOGFILE '_'
+    strconcat LOGFILE str
+    strconcat LOGFILE '.log'
+
+    ; SSHで接続する
+    MSG       = HOST_IP_1
+    strconcat MSG ' /ssh /2 /nosecuritywarning /auth='
+    strconcat MSG AUTHTYPE
+    strconcat MSG ' /user='
+    strconcat MSG HOST_USER_1
+    strconcat MSG ' /passwd='
+    strconcat MSG HOST_PASS_1
+    connect   MSG
+
+    restoresetup INI_FILE
+    settitle HOST_NAME
+ 
+    ; 接続失敗時はログのみ保存し、ホストリストの次の行を読み込む
+    if result<>2 Then
+      strconcat  LOGFILE '.error'
+      filecreate ERRORFILE LOGFILE
+      fileclose  ERRORFILE
+      closett
+      return
+    endif
+
+    ; ログへの書き込みを開始する
+
+    logclose
+    logopen LOGFILE 0 1 1 1 1
+
+    logwrite '*********************************'#13#10
+    logwrite 'Hostname:'
+    logwrite HOST_NAME
+    logwrite #13#10
+    logwrite 'UserName:'
+    logwrite HOST_USER_1
+    logwrite #13#10
+    logwrite 'Execution time :'
+    str_Get=Str_Getdate
+    strconcat Str_Get ' '
+    strconcat Str_Get Str_Gettime
+    logwrite Str_Get
+    logwrite #13#10
+    logwrite '*********************************'#13#10
+
+    wait '#' '$' '>' '] ' ':admin>'
+
+    sendln
+    sendln
+
+    strmatch HOST_OS_1 'RHEL'
+    if result > 0 then
+      PROMPT = RHEL_PROMPT
+
+      waitregex PROMPT
+      sendln 'uname -a'
+
+      waitregex PROMPT
+      sendln 'id'
+
+      waitregex PROMPT
+      sendln 'date'
+
+      waitregex PROMPT
+      sendln 'df -Th'
+
+      waitregex PROMPT
+      sendln 'w'
+
+      waitregex PROMPT
+      sendln 'ps auxww'
+
+      ; rootパスワードが指定されている場合はrootにスイッチする
+      strlen HOST_IP_2
+      if result > 0 then
+
+        CMD = 'ssh -o "StrictHostKeyChecking no" '
+        strconcat CMD HOST_USER_2
+        strconcat CMD "@"
+        strconcat CMD HOST_IP_2
+        sendln CMD
+        waitregex 'Password' 'password' 'パスワード'
+        sendln HOST_PASS_2
+        waitregex '.*\]# |.*\]$ ' '~ #|^/.*#|.*\] ' '\/admin1->|racadm>>' '^->' '^.*oa[0-9]*>' '.*:admin>' '.*#' '.*hpiLO.*' '[admin\@.*# '
+
+	sendln
+
+      endif
+
+    strmatch HOST_OS_1 'ESX'
+    if result > 0 then
+      PROMPT = ESX_PROMPT
+
+      waitregex PROMPT
+      sendln 'uname -a'
+
+      waitregex PROMPT
+      sendln 'date'
+
+      waitregex PROMPT
+      sendln 'df -h'
+    endif  
+
+    strmatch HOST_OS_1 'iDRAC'
+    if result > 0 then
+      PROMPT = iDRAC_PROMPT
+
+      waitregex PROMPT
+      sendln
+    endif  
+
+    strmatch HOST_OS_1 'BIGIP'
+    if result > 0 then
+      PROMPT = BIGIP_PROMPT
+    endif
+
+    sendln
+    sendln
+
+    ;; コマンドリストを読み込む
+    ;; コマンドリストが存在しない場合はダイアログから選択
+    strconcat COMMAND_FILE CMD_DIR
+
+    strlen HOST_OS_2
+    if result > 0 then
+      strconcat COMMAND_FILE HOST_OS_2
+    else
+      strconcat COMMAND_FILE HOST_OS_1
+    endif 
+    strconcat COMMAND_FILE '.list'
+    filesearch COMMAND_FILE
+    if result = 0 then
+      filenamebox 'コマンドリストを選択してください' 0
+      COMMAND_FILE = inputstr
+      fileopen COMMAND_LIST COMMAND_FILE 0
+    else
+      fileopen COMMAND_LIST COMMAND_FILE 0
+    endif
+ 
+    ; コマンドリストを読み込み実行する
+    fileopen COMMAND_LIST COMMAND_FILE 0
+
+    while 1
+      filereadln COMMAND_LIST COMMAND_LIST_LINE
+      if result = 1 break
+ 
+      flushrecv
+      waitregex '.*\]# |.*\]$ ' '~ #|^/.*#|.*\] ' '\/admin1->|racadm>>' '^->' '^.*oa[0-9]*>' '.*:admin>' '.*#' '.*hpiLO.*' '[admin\@.*# '
+      sendln COMMAND_LIST_LINE
+ 
+    endwhile
+    fileclose COMMAND_LIST
+    COMMAND_FILE = ''
+
+    ; リンクを解除し、次のホストを処理する
+    ; ウィンドウを閉じる場合は closett に変更する
+    ;closett
+    unlink
+    return
