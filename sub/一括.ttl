@@ -1,14 +1,4 @@
-;; 一括.ttl
-
-;; 最終更新日: 2016/09/27
-;;
-;; ホストリストを読み込む
 ;; ホストリストが存在しない場合はダイアログから選択
-getdir      CurrentDir
-HOST_FILE = CurrentDir
-HOST      = 'host.list'
-makepath    HOST_FILE    CurrentDir HOST
-
 filesearch HOST_FILE
 if result = 0 then
   filenamebox 'ホストリストを選択してください' 0
@@ -50,9 +40,14 @@ filereadln HOST_LIST HOST_LIST_LINE
     HOST_USER_2  = Groupmatchstr8
     HOST_PASS_2  = Groupmatchstr9
 
+    strmatch HOST_OS_1 'Linux'
+    if result > 0 then
+      PROMPT   = Linux_PROMPT
+      AUTHTYPE = 'password'
+    endif
     strmatch HOST_OS_1 'ESX'
     if result > 0 then
-      strsplit HOST_LIST_LINE '	'
+      PROMPT   = ESX_PROMPT
       AUTHTYPE = 'challenge'
     endif
 
@@ -82,17 +77,18 @@ filereadln HOST_LIST HOST_LIST_LINE
     strconcat MSG HOST_PASS_1
     connect   MSG
 
-    restoresetup INI_FILE
-    settitle HOST_NAME
- 
     ; 接続失敗時はログのみ保存し、ホストリストの次の行を読み込む
     if result<>2 Then
+      messagebox 'ERROT' ''
       strconcat  LOGFILE '.error'
       filecreate ERRORFILE LOGFILE
       fileclose  ERRORFILE
       closett
       return
     endif
+
+    restoresetup INI_FILE
+    settitle HOST_NAME
 
     ; ログへの書き込みを開始する
 
@@ -114,15 +110,13 @@ filereadln HOST_LIST HOST_LIST_LINE
     logwrite #13#10
     logwrite '*********************************'#13#10
 
-    wait '#' '$' '>' '] ' ':admin>'
+    waitregex PROMPT
 
     sendln
     sendln
 
-    strmatch HOST_OS_1 'RHEL'
+    strmatch HOST_OS_1 'Linux'
     if result > 0 then
-      PROMPT = RHEL_PROMPT
-
       waitregex PROMPT
       sendln 'uname -a'
 
@@ -141,9 +135,15 @@ filereadln HOST_LIST HOST_LIST_LINE
       waitregex PROMPT
       sendln 'ps auxww'
 
-      ; rootパスワードが指定されている場合はrootにスイッチする
+      ; IP②が入力されている場合はSSHログインを実行する。
       strlen HOST_IP_2
       if result > 0 then
+        strmatch HOST_OS_1 'Linux'
+        if result > 0 then
+          PROMPT = Linux_PROMPT
+        else
+          PROMPT = ESX_PROMPT
+        endif
 
         CMD = 'ssh -o "StrictHostKeyChecking no" '
         strconcat CMD HOST_USER_2
@@ -152,16 +152,12 @@ filereadln HOST_LIST HOST_LIST_LINE
         sendln CMD
         waitregex 'Password' 'password' 'パスワード'
         sendln HOST_PASS_2
-        waitregex '.*\]# |.*\]$ ' '~ #|^/.*#|.*\] ' '\/admin1->|racadm>>' '^->' '^.*oa[0-9]*>' '.*:admin>' '.*#' '.*hpiLO.*' '[admin\@.*# '
-
-	sendln
-
+        waitregex PROMPT
+        sendln
       endif
 
     strmatch HOST_OS_1 'ESX'
     if result > 0 then
-      PROMPT = ESX_PROMPT
-
       waitregex PROMPT
       sendln 'uname -a'
 
@@ -172,32 +168,24 @@ filereadln HOST_LIST HOST_LIST_LINE
       sendln 'df -h'
     endif  
 
-    strmatch HOST_OS_1 'iDRAC'
-    if result > 0 then
-      PROMPT = iDRAC_PROMPT
-
-      waitregex PROMPT
-      sendln
-    endif  
-
-    strmatch HOST_OS_1 'BIGIP'
-    if result > 0 then
-      PROMPT = BIGIP_PROMPT
-    endif
-
-    sendln
-    sendln
-
     ;; コマンドリストを読み込む
     ;; コマンドリストが存在しない場合はダイアログから選択
     strconcat COMMAND_FILE CMD_DIR
 
+    ;; 踏み台の有無でコマンドリストを変更する
     strlen HOST_OS_2
     if result > 0 then
+      strmatch HOST_OS_2 'Linux'
+      if resule > 0 then
+        PROMPT = ESX_PROMPT
+      else
+        PROMPT = Linux_PROMPT
+      endif
       strconcat COMMAND_FILE HOST_OS_2
     else
       strconcat COMMAND_FILE HOST_OS_1
     endif 
+
     strconcat COMMAND_FILE '.list'
     filesearch COMMAND_FILE
     if result = 0 then
@@ -208,17 +196,13 @@ filereadln HOST_LIST HOST_LIST_LINE
       fileopen COMMAND_LIST COMMAND_FILE 0
     endif
  
-    ; コマンドリストを読み込み実行する
-    fileopen COMMAND_LIST COMMAND_FILE 0
-
     while 1
       filereadln COMMAND_LIST COMMAND_LIST_LINE
       if result = 1 break
  
       flushrecv
-      waitregex '.*\]# |.*\]$ ' '~ #|^/.*#|.*\] ' '\/admin1->|racadm>>' '^->' '^.*oa[0-9]*>' '.*:admin>' '.*#' '.*hpiLO.*' '[admin\@.*# '
+      waitregex PROMPT
       sendln COMMAND_LIST_LINE
- 
     endwhile
     fileclose COMMAND_LIST
     COMMAND_FILE = ''
