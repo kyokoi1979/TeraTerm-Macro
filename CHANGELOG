@@ -1,0 +1,90 @@
+commit f0a6479975d6d18c3c9619ee618e2e3ae09be032 (HEAD -> master, origin/master)
+Author: Kenta Yokoi <kyokoi@syachiku.info>
+Date:   Mon Jul 5 00:58:56 2021 +0900
+
+    ・OS判定の誤りを修正
+    ・ホストリスト.xlsmが動作するように修正
+
+M       README.md
+M       host.list
+M       sub/一括.ttl
+M       sub/個別.ttl
+M       ホストリスト.xlsm
+
+commit c1527668d38cac0765ead4e1c64f9af3693f9d7a
+Author: Kenta Yokoi <kyokoi@syachiku.info>
+Date:   Sun Jul 4 22:39:31 2021 +0900
+
+    fix
+
+M       cmdlist/command_Linux.list
+
+commit aa7d51f35fe982db9de7a24aef624d67fdb3a944
+Author: Kenta Yokoi <kyokoi@syachiku.info>
+Date:   Sun Jul 4 22:39:10 2021 +0900
+
+    fix
+
+M       host.list
+
+commit 63519f9754af8cdee446ce420cce99e250d88c12
+Author: Kenta Yokoi <kyokoi@syachiku.info>
+Date:   Sun Jul 4 22:38:11 2021 +0900
+
+    コマンドリストの追加
+
+A       cmdlist/command_ESX.list
+A       cmdlist/command_Linux.list
+
+commit 665cb4a0a807fba90d2bc2da88b60edc83b60f83
+Author: Kenta Yokoi <kyokoi@syachiku.info>
+Date:   Sun Jul 4 22:36:54 2021 +0900
+
+    ・各種設定の判別処理の見直し
+    ・仕様頻度の低いOSの処理を削除
+
+M       README.md
+D       cmdlist/command_RHEL.list
+M       host.list
+M       sub/一括.ttl
+M       sub/個別.ttl
+M       ログイン用マクロ.ttl
+
+commit 38014445cfdb00fa0b93d8de4926169f8ce300e7
+Author: Kenta Yokoi <kyokoi@syachiku.info>
+Date:   Sun Jul 4 10:09:42 2021 +0900
+
+    使わない処理を削除
+
+M       ログイン用マクロ.ttl
+
+commit 3e1827c99f4f6a1c1ca04ccfc809d6fc18d0bd36
+Author: Kenta Yokoi <kyokoi@syachiku.info>
+Date:   Sat Jul 3 06:58:31 2021 +0900
+
+    fix README
+
+M       README.md
+
+commit 55b357a827ece098bc28f40fb1c188a9f9a8581c
+Author: Kenta Yokoi <kyokoi@syachiku.info>
+Date:   Fri Jul 2 21:44:47 2021 +0000
+
+    Add README.md
+
+A       README.md
+
+commit 5788c2bad2a4bc0982521ff8874b5e8efb89cf7f
+Author: Kenta Yokoi <kyokoi@syachiku.info>
+Date:   Sat Jul 3 06:01:47 2021 +0900
+
+    init
+
+A       .gitignore
+A       TERATERM.INI
+A       cmdlist/command_RHEL.list
+A       host.list
+A       sub/一括.ttl
+A       sub/個別.ttl
+A       ホストリスト.xlsm
+A       ログイン用マクロ.ttl
