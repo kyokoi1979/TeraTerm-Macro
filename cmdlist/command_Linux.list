@@ -1,5 +1,0 @@
-sudo -i
-
-docker ps
-
-df -Th
