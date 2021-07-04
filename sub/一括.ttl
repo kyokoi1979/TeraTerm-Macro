@@ -14,8 +14,8 @@ filereadln HOST_LIST HOST_LIST_LINE
     strlen HOST_LIST_LINE
     if result = 0 Goto END
 
-    ; ホストリストの先頭が#以外の場合、対象機器にログインする
-    strmatch HOST_LIST_LINE '^#'
+    ; ホストリストの先頭が#, TAB以外の場合、対象機器にログインする
+    strmatch HOST_LIST_LINE '^#|^\t'
     if result<>1 call CONNECT_PROCESS
 
   ; マクロ終了
@@ -79,7 +79,7 @@ filereadln HOST_LIST HOST_LIST_LINE
 
     ; 接続失敗時はログのみ保存し、ホストリストの次の行を読み込む
     if result<>2 Then
-      messagebox 'ERROT' ''
+      messagebox 'ERROR' ''
       strconcat  LOGFILE '.error'
       filecreate ERRORFILE LOGFILE
       fileclose  ERRORFILE
@@ -138,7 +138,7 @@ filereadln HOST_LIST HOST_LIST_LINE
       ; IP②が入力されている場合はSSHログインを実行する。
       strlen HOST_IP_2
       if result > 0 then
-        strmatch HOST_OS_1 'Linux'
+        strmatch HOST_OS_2 'Linux'
         if result > 0 then
           PROMPT = Linux_PROMPT
         else
@@ -152,8 +152,8 @@ filereadln HOST_LIST HOST_LIST_LINE
         sendln CMD
         waitregex 'Password' 'password' 'パスワード'
         sendln HOST_PASS_2
-        waitregex PROMPT
         sendln
+        waitregex PROMPT
       endif
 
     strmatch HOST_OS_1 'ESX'
@@ -176,10 +176,10 @@ filereadln HOST_LIST HOST_LIST_LINE
     strlen HOST_OS_2
     if result > 0 then
       strmatch HOST_OS_2 'Linux'
-      if resule > 0 then
-        PROMPT = ESX_PROMPT
-      else
+      if result > 0 then
         PROMPT = Linux_PROMPT
+      else
+        PROMPT = ESX_PROMPT
       endif
       strconcat COMMAND_FILE HOST_OS_2
     else
@@ -196,11 +196,12 @@ filereadln HOST_LIST HOST_LIST_LINE
       fileopen COMMAND_LIST COMMAND_FILE 0
     endif
  
+    sendln 
+
     while 1
       filereadln COMMAND_LIST COMMAND_LIST_LINE
       if result = 1 break
  
-      flushrecv
       waitregex PROMPT
       sendln COMMAND_LIST_LINE
     endwhile

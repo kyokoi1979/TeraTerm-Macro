@@ -41,7 +41,7 @@ while
   endif
  
 ; ホストリストから情報を取得する
-  strmatch HOST_LIST_LINE '^#'
+  strmatch HOST_LIST_LINE '^#|^\t'
   if result<>1 then
     strsplit HOST_LIST_LINE '	'
     HOST_NAME[i]    = Groupmatchstr1
@@ -143,7 +143,12 @@ if result > 0 then
   ; IP②が入力されている場合はSSHログインを実行する。
   strlen HOST_CONNECT_IP_2
   if result > 0 then
-
+    strmatch HOST_CONNECT_OS_2 'ESX'
+    if result > 0 then
+      PROMPT = ESX_PROMPT
+    else
+      PROMPT = Linux_PROMPT
+    endif
     CMD = 'ssh -o "StrictHostKeyChecking no" '
     strconcat CMD HOST_CONNECT_USER_2
     strconcat CMD "@"
@@ -151,9 +156,8 @@ if result > 0 then
     sendln CMD
     waitregex 'Password' 'password' 'パスワード'
     sendln HOST_CONNECT_PASS_2
-    waitregex PROMPT
-
     sendln
+    waitregex PROMPT
   endif
 endif
 

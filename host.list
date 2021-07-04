@@ -1,1 +1,11 @@
 #表示名	ログインIP①	OS種別①	ログインユーザ①	ログインパスワード①	ログインIP②	OS種別②	ログインユーザ②	ユーザパスワード②
+サーバ#1	192.168.1.1	Linux	user	password				
+サーバ#2	192.168.1.2	Linux	user	password				
+サーバ#3	192.168.1.1	Linux	user	password	192.168.1.8	Linux	user	password
+サーバ#4	192.168.1.1	Linux	user	password	192.168.1.9	Linux	user	password
+サーバ#5	192.168.1.1	Linux	user	password	192.168.1.5	Linux	user	password
+								
+								
+								
+								
+								
