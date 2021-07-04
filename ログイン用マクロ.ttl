@@ -1,11 +1,5 @@
 ;; ログイン用マクロ.ttl
 ;;
-;;　更新履歴
-;;　2016/04/26 iLOに対応(ユーザ名はsimusr固定)
-;;  2016/09/01 ESX6.0に対応
-;;             個別/一括を一つにまとめた
-;;
-;;
 ;; マクロと同じディレクトリにあるホストリスト、
 ;; コマンドリストを読み込み実行する。
 ;;
@@ -29,13 +23,6 @@ AUTHTYPE = 'password'
 ;; 各OSのプロンプトを定義
 RHEL_PROMPT = '.*\]# |.*\]$ '
 ESX_PROMPT  = '~ #|^/.*#|.*\] '
-iDRAC_PROMPT = '\/admin1->|racadm>>'
-VC_PROMPT   = '^->'
-OA_PROMPT   = '^.*oa[0-9]*>'
-FCSW_PROMPT = '.*:admin>'
-VNX_PROMPT  = '.*#'
-iLO_PROMPT  = '.*hpiLO.*'
-BIGIP_PROMPT = '[admin\@.*# '
 
 ;; リストファイルはマクロと同じディレクトリから取得
 getdate Log_Getdate
@@ -57,13 +44,8 @@ strconcat LOGSPATH Log_Day
 
 HOST_FILE = CurrentDir
 HOST      = 'host.list'
-makepath    HOST_FILE CurrentDir HOST
-PowerShell= 'C:\Windows\System32\WindowsPowerShell\v1.0\PowerShell.exe '
-strconcat   PS1 CurrentDir
-strconcat   PS1 '\sub\RDP.ps1'
-strconcat  PowerShell PS1 
-
-makepath INI_FILE     CurrentDir INI
+makepath  HOST_FILE CurrentDir HOST
+makepath  INI_FILE  CurrentDir INI
 
 ;; ログディレクトリ作成
 ;; ディレクトリを作成できない場合、同名のファイルが存在する場合は終了
