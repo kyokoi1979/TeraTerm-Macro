@@ -1,5 +1,4 @@
 ;; ログイン用マクロ.ttl
-CMD       = 'command_'
 INI       = 'TERATERM.INI'
 TIMEOUT   = 60
 
@@ -14,40 +13,28 @@ Linux_PROMPT = '.*\][$|#]'
 ESX_PROMPT   = '\[.*\] '
 
 ;; リストファイルはマクロと同じディレクトリから取得
-getdate Log_Getdate
-strcopy Log_Getdate 1 4 Log_Year
-strcopy Log_Getdate 6 2 Log_Mon
-strcopy Log_Getdate 9 2 Log_Day
+getdate Log_Date  '%Y%m%d'
+getdir Current_Dir
+sprintf2 Cmd_Path '%s\cmdlist\command' Current_Dir
+sprintf2 Log_Path '%s\log\%s' Current_Dir Log_Date
 
-getdir CurrentDir
-CMD_DIR      = CurrentDir
-LOGSPATH     = CurrentDir
-strconcat CMD_DIR '\cmdlist\'
-strconcat CMD_DIR CMD
-strconcat LOGSPATH '\log\'
-foldercreate LOGSPATH
-
-strconcat LOGSPATH Log_Year
-strconcat LOGSPATH Log_Mon
-strconcat LOGSPATH Log_Day
-
-HOST_FILE = CurrentDir
+HOST_FILE = Current_Dir
 HOST      = 'host.list'
-makepath  HOST_FILE CurrentDir HOST
-makepath  INI_FILE  CurrentDir INI
+makepath  HOST_FILE Current_Dir HOST
+makepath  INI_FILE  Current_Dir INI
 
 ;; ログディレクトリ作成
 ;; ディレクトリを作成できない場合、同名のファイルが存在する場合は終了
-filesearch LOGSPATH
+filesearch Log_Path
 if result=1 then
-  foldersearch LOGSPATH
+  foldersearch Log_Path
   if result <> 1 then
-    sprintf2 msg '%s is a file.' LOGSPATH
+    sprintf2 msg '%s is a file.' Log_Path
     messagebox msg ''
     end
   endif
 else
-  foldercreate LOGSPATH
+  foldercreate Log_Path
 
   if result <> 0 then
     messagebox 'ログディレクトリを作成できません。' ''
@@ -56,7 +43,7 @@ else
 endif
 
 inputbox '"作業名"を入力して下さい。' '"作業名"'
-str = inputstr
+Log_Str = inputstr
 
 ;; 一括or個別ログインの選択
 strdim lst 2
@@ -70,17 +57,6 @@ elseif result = 0 then
 elseif result = 1 then
   mode = 2
 endif
-
-;; ログファイル名用に日付・時間を取得
-getdate Str_Getdate
-strcopy Str_Getdate 1 4 Str_Year
-strcopy Str_Getdate 6 2 Str_Mon
-strcopy Str_Getdate 9 2 Str_Day
-
-gettime Str_Gettime
-strcopy Str_Gettime 1 2 Str_Hour
-strcopy Str_Gettime 4 2 Str_Min
-strcopy Str_Gettime 7 2 Str_Sec
 
 if mode = 1 then
   include 'sub/個別.ttl'

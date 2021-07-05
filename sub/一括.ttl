@@ -28,7 +28,7 @@ filereadln HOST_LIST HOST_LIST_LINE
  
   ; 対象機器に接続する
   :CONNECT_PROCESS
-    ; "," を区切りとして変数に代入する
+    ;; TABを区切りとして変数に代入する
     strsplit HOST_LIST_LINE '	'
     HOST_NAME    = Groupmatchstr1
     HOST_IP_1    = Groupmatchstr2
@@ -40,49 +40,32 @@ filereadln HOST_LIST HOST_LIST_LINE
     HOST_USER_2  = Groupmatchstr8
     HOST_PASS_2  = Groupmatchstr9
 
+    ;; OSに応じて認証方法を変更する
     strmatch HOST_OS_1 'Linux'
     if result > 0 then
       PROMPT   = Linux_PROMPT
-      AUTHTYPE = 'password'
+      AUTHTYPE = Linux_AUTHTYPE
     endif
     strmatch HOST_OS_1 'ESX'
     if result > 0 then
       PROMPT   = ESX_PROMPT
-      AUTHTYPE = 'challenge'
+      AUTHTYPE = ESX_AUTHTYPE
     endif
 
-    ; ログの記録を行う
-    strconcat LOGSPATH '\'
-    LOGFILE = LOGSPATH
-    strconcat LOGFILE HOST_NAME
-    strconcat LOGFILE '_'
-    strconcat LOGFILE Str_Year
-    strconcat LOGFILE Str_Mon
-    strconcat LOGFILE Str_Day
-    strconcat LOGFILE '_'
-    strconcat LOGFILE Str_Hour
-    strconcat LOGFILE Str_Min
-    strconcat LOGFILE Str_Sec
-    strconcat LOGFILE '_'
-    strconcat LOGFILE str
-    strconcat LOGFILE '.log'
+    ;; ログの記録を行う
+    gettime Log_Time '%H%M%S'
+    sprintf2 Log_File '%s\%s_%s_%s_%s.log' Log_Path HOST_NAME Log_Date Log_Time Log_Str
 
-    ; SSHで接続する
-    MSG       = HOST_IP_1
-    strconcat MSG ' /ssh /2 /nosecuritywarning /auth='
-    strconcat MSG AUTHTYPE
-    strconcat MSG ' /user='
-    strconcat MSG HOST_USER_1
-    strconcat MSG ' /passwd='
-    strconcat MSG HOST_PASS_1
-    connect   MSG
+    ;; SSHで接続する
+    sprintf2 COMMAND '%s /ssh /2 /nosecuritywarning /auth=%s /user=%s /passwd=%s' HOST_IP_1 AUTHTYPE HOST_USER_1 HOST_PASS_1
+    connect COMMAND
 
-    ; 接続失敗時はログのみ保存し、ホストリストの次の行を読み込む
+    ;; 接続失敗時はログのみ保存し、ホストリストの次の行を読み込む
     if result<>2 Then
       messagebox 'ERROR' ''
-      strconcat  LOGFILE '.error'
-      filecreate ERRORFILE LOGFILE
-      fileclose  ERRORFILE
+      strconcat Log_File '.error'
+      filecreate ErrorLog_File Log_File
+      fileclose  ErrorLog_File
       closett
       return
     endif
@@ -90,30 +73,9 @@ filereadln HOST_LIST HOST_LIST_LINE
     restoresetup INI_FILE
     settitle HOST_NAME
 
-    ; ログへの書き込みを開始する
-
+    ;; 開いているログがあれば閉じて指定したファイル名でオープン
     logclose
-    logopen LOGFILE 0 1 1 1 1
-
-    logwrite '*********************************'#13#10
-    logwrite 'Hostname:'
-    logwrite HOST_NAME
-    logwrite #13#10
-    logwrite 'UserName:'
-    logwrite HOST_USER_1
-    logwrite #13#10
-    logwrite 'Execution time :'
-    str_Get=Str_Getdate
-    strconcat Str_Get ' '
-    strconcat Str_Get Str_Gettime
-    logwrite Str_Get
-    logwrite #13#10
-    logwrite '*********************************'#13#10
-
-    waitregex PROMPT
-
-    sendln
-    sendln
+    logopen Log_File 0 1 1 1 1
 
     strmatch HOST_OS_1 'Linux'
     if result > 0 then
@@ -134,27 +96,7 @@ filereadln HOST_LIST HOST_LIST_LINE
 
       waitregex PROMPT
       sendln 'ps auxww'
-
-      ; IP②が入力されている場合はSSHログインを実行する。
-      strlen HOST_IP_2
-      if result > 0 then
-        strmatch HOST_OS_2 'Linux'
-        if result > 0 then
-          PROMPT = Linux_PROMPT
-        else
-          PROMPT = ESX_PROMPT
-        endif
-
-        CMD = 'ssh -o "StrictHostKeyChecking no" '
-        strconcat CMD HOST_USER_2
-        strconcat CMD "@"
-        strconcat CMD HOST_IP_2
-        sendln CMD
-        waitregex 'Password' 'password' 'パスワード'
-        sendln HOST_PASS_2
-        sendln
-        waitregex PROMPT
-      endif
+    endif
 
     strmatch HOST_OS_1 'ESX'
     if result > 0 then
@@ -168,10 +110,26 @@ filereadln HOST_LIST HOST_LIST_LINE
       sendln 'df -h'
     endif  
 
+    ;; IP②が入力されている場合はSSHログインを実行する。
+    strlen HOST_IP_2
+    if result > 0 then
+      strmatch HOST_OS_2 'Linux'
+      if result > 0 then
+        PROMPT = Linux_PROMPT
+      else
+        PROMPT = ESX_PROMPT
+      endif
+
+      sprintf2 CMD 'ssh -o "StrictHostKeyChecking no" %s@%s' HOST_USER_2 HOST_IP_2
+      sendln CMD
+      waitregex 'Password' 'password' 'パスワード'
+      sendln HOST_PASS_2
+      waitregex PROMPT
+      sendln
+    endif
+
     ;; コマンドリストを読み込む
     ;; コマンドリストが存在しない場合はダイアログから選択
-    strconcat COMMAND_FILE CMD_DIR
-
     ;; 踏み台の有無でコマンドリストを変更する
     strlen HOST_OS_2
     if result > 0 then
@@ -181,32 +139,30 @@ filereadln HOST_LIST HOST_LIST_LINE
       else
         PROMPT = ESX_PROMPT
       endif
-      strconcat COMMAND_FILE HOST_OS_2
+      sprintf2 Cmd_List_File '%s_%s.list' Cmd_Path HOST_OS_2
     else
-      strconcat COMMAND_FILE HOST_OS_1
+      sprintf2 Cmd_List_File '%s_%s.list' Cmd_Path HOST_OS_1
     endif 
 
-    strconcat COMMAND_FILE '.list'
-    filesearch COMMAND_FILE
+    filesearch Cmd_List_File
     if result = 0 then
       filenamebox 'コマンドリストを選択してください' 0
-      COMMAND_FILE = inputstr
-      fileopen COMMAND_LIST COMMAND_FILE 0
-    else
-      fileopen COMMAND_LIST COMMAND_FILE 0
+      Cmd_List = inputstr
     endif
- 
-    sendln 
 
+    fileopen Cmd_List Cmd_List_File 0
+ 
     while 1
-      filereadln COMMAND_LIST COMMAND_LIST_LINE
+      filereadln Cmd_List Cmd_List_Line
       if result = 1 break
  
+      sendln
+      flushrecv
       waitregex PROMPT
-      sendln COMMAND_LIST_LINE
+      sendln Cmd_List_Line
     endwhile
-    fileclose COMMAND_LIST
-    COMMAND_FILE = ''
+    fileclose Cmd_List
+    Cmd_List_File = ''
 
     ; リンクを解除し、次のホストを処理する
     ; ウィンドウを閉じる場合は closett に変更する
