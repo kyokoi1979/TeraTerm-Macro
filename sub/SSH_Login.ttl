@@ -1,0 +1,108 @@
+:SSH_Login
+
+;; TERATERM.INIを開き、ターミナルのタイトルを変更する。
+restoresetup INI_FILE
+settitle HOST_NAME
+
+;; 開いているログがあれば閉じて指定したファイル名でオープン
+logclose
+logopen Log_File 0 1 1 1 1
+
+strmatch HOST_OS_1 'Linux'
+if result > 0 then
+  waitregex PROMPT
+  sendln 'uname -a'
+
+  waitregex PROMPT
+  sendln 'id'
+
+  waitregex PROMPT
+  sendln 'date'
+
+  waitregex PROMPT
+  sendln 'df -Th'
+
+  waitregex PROMPT
+  sendln 'w'
+
+  waitregex PROMPT
+  sendln 'ps auxww'
+endif
+
+strmatch HOST_OS_1 'ESX'
+if result > 0 then
+  waitregex PROMPT
+  sendln 'uname -a'
+
+  waitregex PROMPT
+  sendln 'date'
+
+  waitregex PROMPT
+  sendln 'df -h'
+
+  waitregex PROMPT
+  sendln 'who'
+endif  
+
+;; IP②が入力されている場合はSSHログインを実行する。
+strlen HOST_IP_2
+if result > 0 then
+  strmatch HOST_OS_2 'Linux'
+  if result > 0 then
+    PROMPT = Linux_PROMPT
+  else
+    PROMPT = ESX_PROMPT
+  endif
+
+  sprintf2 CMD 'ssh -o "StrictHostKeyChecking no" %s@%s' HOST_USER_2 HOST_IP_2
+  sendln CMD
+  waitregex 'Password' 'password' 'パスワード'
+  sendln HOST_PASS_2
+  waitregex PROMPT
+  sendln
+endif
+
+; コマンドリストを読み込み実行する
+;; コマンドリストが存在しない場合はダイアログから選択
+;; 踏み台の有無でコマンドリストを変更する
+strlen HOST_OS_2
+if result > 0 then
+  strmatch HOST_OS_2 'Linux'
+  if result > 0 then
+    PROMPT = Linux_PROMPT
+  else
+    PROMPT = ESX_PROMPT
+  endif
+  sprintf2 Cmd_List_File '%s_%s.list' Cmd_Path HOST_OS_2
+else
+  sprintf2 Cmd_List_File '%s_%s.list' Cmd_Path HOST_OS_1
+endif 
+
+filesearch Cmd_List_File
+if result = 0 then
+  filenamebox 'コマンドリストを選択してください' 0
+  Cmd_List = inputstr
+endif
+
+fileopen Cmd_List Cmd_List_File 0
+
+while 1
+  filereadln Cmd_List Cmd_List_Line
+  if result = 1 break
+
+  sendln
+  flushrecv
+  waitregex PROMPT
+  sendln Cmd_List_Line
+endwhile
+
+fileclose Cmd_List
+Cmd_List_File = ''
+
+if kobetsu = 1 then
+    messagebox 'マクロの実行が完了しました。' ''
+   end
+else
+  unlink
+  return
+endif
