@@ -20,16 +20,15 @@ endwhile
 fileclose HOST_LIST
 
 ;; 配列を作成
-strdim HOST_NAME i
-strdim HOST_IP_1 i
-strdim HOST_IP_2 i
-strdim HOST_OS_1 i
-strdim HOST_OS_2 i
-strdim HOST_USER_1 i
-strdim HOST_USER_2 i
-strdim HOST_PASS_1 i
-strdim HOST_PASS_2 i
-strdim PS i
+strdim HOST_LIST_NAME i
+strdim HOST_LIST_IP_1 i
+strdim HOST_LIST_IP_2 i
+strdim HOST_LIST_OS_1 i
+strdim HOST_LIST_OS_2 i
+strdim HOST_LIST_USER_1 i
+strdim HOST_LIST_USER_2 i
+strdim HOST_LIST_PASS_1 i
+strdim HOST_LIST_PASS_2 i
 
 ;; ホストリストを読み込む
 fileopen HOST_LIST HOST_FILE 0
@@ -44,40 +43,40 @@ while
   strmatch HOST_LIST_LINE '^#|^\t'
   if result<>1 then
     strsplit HOST_LIST_LINE '	'
-    HOST_NAME[i]    = Groupmatchstr1
-    HOST_IP_1[i]    = Groupmatchstr2
-    HOST_OS_1[i]    = Groupmatchstr3
-    HOST_USER_1[i]  = Groupmatchstr4
-    HOST_PASS_1[i]  = Groupmatchstr5
-    HOST_IP_2[i]    = Groupmatchstr6
-    HOST_OS_2[i]    = Groupmatchstr7
-    HOST_USER_2[i]  = Groupmatchstr8
-    HOST_PASS_2[i]  = Groupmatchstr9
+    HOST_LIST_NAME[i]    = Groupmatchstr1
+    HOST_LIST_IP_1[i]    = Groupmatchstr2
+    HOST_LIST_OS_1[i]    = Groupmatchstr3
+    HOST_LIST_USER_1[i]  = Groupmatchstr4
+    HOST_LIST_PASS_1[i]  = Groupmatchstr5
+    HOST_LIST_IP_2[i]    = Groupmatchstr6
+    HOST_LIST_OS_2[i]    = Groupmatchstr7
+    HOST_LIST_USER_2[i]  = Groupmatchstr8
+    HOST_LIST_PASS_2[i]  = Groupmatchstr9
     
     i=i+1
   endif
 endwhile
  
 ;; ホスト選択画面を表示させる
-listbox 'ログインするホストを選択' 'Select HOST' HOST_NAME
+listbox 'ログインするホストを選択' 'Select HOST' HOST_LIST_NAME
 if result >= 0 then
-  HOST_CONNECT_NAME   = HOST_NAME[result]
-  HOST_CONNECT_IP_1   = HOST_IP_1[result]
-  HOST_CONNECT_OS_1   = HOST_OS_1[result]
-  HOST_CONNECT_USER_1 = HOST_USER_1[result]
-  HOST_CONNECT_PASS_1 = HOST_PASS_1[result]
-  HOST_CONNECT_IP_2   = HOST_IP_2[result]
-  HOST_CONNECT_OS_2   = HOST_OS_2[result]
-  HOST_CONNECT_USER_2 = HOST_USER_2[result]
-  HOST_CONNECT_PASS_2 = HOST_PASS_2[result]
+  HOST_NAME   = HOST_LIST_NAME[result]
+  HOST_IP_1   = HOST_LIST_IP_1[result]
+  HOST_OS_1   = HOST_LIST_OS_1[result]
+  HOST_USER_1 = HOST_LIST_USER_1[result]
+  HOST_PASS_1 = HOST_LIST_PASS_1[result]
+  HOST_IP_2   = HOST_LIST_IP_2[result]
+  HOST_OS_2   = HOST_LIST_OS_2[result]
+  HOST_USER_2 = HOST_LIST_USER_2[result]
+  HOST_PASS_2 = HOST_LIST_PASS_2[result]
 
   ;; OSに応じて認証方法を変更する
-  strmatch HOST_CONNECT_OS_1 'Linux'
+  strmatch HOST_OS_1 'Linux'
   if result > 0 then
     PROMPT = Linux_PROMPT
     AUTHTYPE = Linux_AUTHTYPE
   endif
-  strmatch HOST_CONNECT_OS_1 'ESX'
+  strmatch HOST_OS_1 'ESX'
   if result > 0 then
     PROMPT = ESX_PROMPT
     AUTHTYPE = ESX_AUTHTYPE
@@ -88,22 +87,22 @@ else
 endif
 
 ;; SSH接続用のコマンドを生成し、接続する。
-sprintf2 COMMAND '%s /ssh /2 /nosecuritywarning /auth=%s /user=%s /passwd=%s' HOST_CONNECT_IP_1 AUTHTYPE HOST_CONNECT_USER_1 HOST_CONNECT_PASS_1
+sprintf2 COMMAND '%s /ssh /2 /nosecuritywarning /auth=%s /user=%s /passwd=%s' HOST_IP_1 AUTHTYPE HOST_USER_1 HOST_PASS_1
 connect COMMAND
 
 ;; TERATERM.INIを開き、ターミナルのタイトルを変更する。
 restoresetup INI_FILE
-settitle HOST_CONNECT_NAME
+settitle HOST_NAME
 
 ;; ログの記録を行う
 gettime Log_Time '%H%M%S'
-sprintf2 Log_File '%s\%s_%s_%s_%s.log' Log_Path HOST_CONNECT_NAME Log_Date Log_Time Log_Str
+sprintf2 Log_File '%s\%s_%s_%s_%s.log' Log_Path HOST_NAME Log_Date Log_Time Log_Str
 
 ;; 開いているログがあれば閉じて指定したファイル名でオープン
 logclose
 logopen Log_File 0 1 1 1 1
 
-strmatch HOST_CONNECT_OS_1 'Linux'
+strmatch HOST_OS_1 'Linux'
 if result > 0 then
 
   waitregex PROMPT
@@ -126,7 +125,7 @@ if result > 0 then
 
 endif
 
-strmatch HOST_CONNECT_OS_1 'ESX'
+strmatch HOST_OS_1 'ESX'
 if result > 0 then
   waitregex PROMPT
   sendln 'uname -a'
@@ -142,18 +141,19 @@ if result > 0 then
 endif
 
 ; IP②が入力されている場合はSSHログインを実行する。
-strlen HOST_CONNECT_IP_2
+strlen HOST_IP_2
 if result > 0 then
-  strmatch HOST_CONNECT_OS_2 'ESX'
+  strmatch HOST_OS_2 'Linux'
   if result > 0 then
-    PROMPT = ESX_PROMPT
-  else
     PROMPT = Linux_PROMPT
+  else
+    PROMPT = ESX_PROMPT
   endif
-  sprintf2 CMD 'ssh -o "StrictHostKeyChecking no" %s@%s' HOST_CONNECT_USER_2 HOST_CONNECT_IP_2
+  messagebox PROMPT ''
+  sprintf2 CMD 'ssh -o "StrictHostKeyChecking no" %s@%s' HOST_USER_2 HOST_IP_2
   sendln CMD
   waitregex 'Password' 'password' 'パスワード'
-  sendln HOST_CONNECT_PASS_2
+  sendln HOST_PASS_2
   waitregex PROMPT
   sendln
 endif
@@ -161,17 +161,17 @@ endif
 ; コマンドリストを読み込み実行する
 ;; コマンドリストが存在しない場合はダイアログから選択
 ;; 踏み台の有無でコマンドリストを変更する
-strlen HOST_CONNECT_OS_2
+strlen HOST_OS_2
 if result > 0 then
-  strmatch HOST_CONNECT_OS_2 'Linux'
+  strmatch HOST_OS_2 'Linux'
   if result > 0 then
     PROMPT = Linux_PROMPT
   else
     PROMPT = ESX_PROMPT
   endif
-  sprintf2 Cmd_List_File '%s_%s.list' Cmd_Path HOST_CONNECT_OS_2
+  sprintf2 Cmd_List_File '%s_%s.list' Cmd_Path HOST_OS_2
 else
-  sprintf2 Cmd_List_File '%s_%s.list' Cmd_Path HOST_CONNECT_OS_1
+  sprintf2 Cmd_List_File '%s_%s.list' Cmd_Path HOST_OS_1
 endif 
 
 filesearch Cmd_List_File
