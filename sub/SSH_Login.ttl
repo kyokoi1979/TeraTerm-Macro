@@ -49,11 +49,12 @@ strlen HOST_IP_2
 if result > 0 then
   strmatch HOST_OS_2 'Linux'
   if result > 0 then
-    PROMPT = Linux_PROMPT
+    PROMPT = Linux_Prompt
   else
-    PROMPT = ESX_PROMPT
+    PROMPT = ESX_Prompt
   endif
 
+  getpassword PASSWD_FILE HOST_USER_2 HOST_PASS_2
   sprintf2 CMD 'ssh -o "StrictHostKeyChecking no" %s@%s' HOST_USER_2 HOST_IP_2
   sendln CMD
   waitregex 'Password' 'password' 'パスワード'
@@ -69,9 +70,9 @@ strlen HOST_OS_2
 if result > 0 then
   strmatch HOST_OS_2 'Linux'
   if result > 0 then
-    PROMPT = Linux_PROMPT
+    PROMPT = Linux_Prompt
   else
-    PROMPT = ESX_PROMPT
+    PROMPT = ESX_Prompt
   endif
   sprintf2 Cmd_List_File '%s_%s.list' Cmd_Path HOST_OS_2
 else

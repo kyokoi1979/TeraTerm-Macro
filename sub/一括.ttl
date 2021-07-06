@@ -1,60 +1,63 @@
 ;; ホストリストが存在しない場合はダイアログから選択
-filesearch HOST_FILE
+filesearch Host_File
 if result = 0 then
   filenamebox 'ホストリストを選択してください' 0
-  HOST_FILE = inputstr
-  fileopen HOST_LIST HOST_FILE 0
+  Host_File = inputstr
+  fileopen Host_List Host_File 0
 else
-  fileopen HOST_LIST HOST_FILE 0
+  fileopen Host_List Host_File 0
 endif
 
-filereadln HOST_LIST HOST_LIST_LINE
+filereadln Host_List Host_List_Line
   while result = 0
     ; ホストリストの最終行に到達したら終了する
-    strlen HOST_LIST_LINE
+    strlen Host_List_Line
     if result = 0 Goto END
 
     ; ホストリストの先頭が#, TAB以外の場合、対象機器にログインする
-    strmatch HOST_LIST_LINE '^#|^\t'
+    strmatch Host_List_Line '^#|^\t'
     if result<>1 call CONNECT_PROCESS
 
   ; マクロ終了
   :END
-    filereadln HOST_LIST HOST_LIST_LINE
+    filereadln Host_List Host_List_Line
     endwhile
-    fileclose HOST_LIST
+    fileclose Host_List
     messagebox 'マクロの実行が完了しました' ''
     end
  
   ; 対象機器に接続する
   :CONNECT_PROCESS
     ;; TABを区切りとして変数に代入する
-    strsplit HOST_LIST_LINE '	'
+    strsplit Host_List_Line '	'
     HOST_NAME    = Groupmatchstr1
     HOST_IP_1    = Groupmatchstr2
     HOST_OS_1    = Groupmatchstr3
     HOST_USER_1  = Groupmatchstr4
-    HOST_PASS_1  = Groupmatchstr5
-    HOST_IP_2    = Groupmatchstr6
-    HOST_OS_2    = Groupmatchstr7
-    HOST_USER_2  = Groupmatchstr8
-    HOST_PASS_2  = Groupmatchstr9
+    HOST_IP_2    = Groupmatchstr5
+    HOST_OS_2    = Groupmatchstr6
+    HOST_USER_2  = Groupmatchstr7
 
     ;; OSに応じて認証方法を変更する
     strmatch HOST_OS_1 'Linux'
     if result > 0 then
-      PROMPT   = Linux_PROMPT
-      AUTHTYPE = Linux_AUTHTYPE
+      PROMPT   = Linux_Prompt
+      AUTHTYPE = Linux_Authtype
     endif
     strmatch HOST_OS_1 'ESX'
     if result > 0 then
-      PROMPT   = ESX_PROMPT
-      AUTHTYPE = ESX_AUTHTYPE
+      PROMPT   = ESX_Prompt
+      AUTHTYPE = ESX_Authtype
     endif
 
     ;; ログファイル名を設定する
     gettime Log_Time '%H%M%S'
     sprintf2 Log_File '%s\%s_%s_%s_%s.log' Log_Path HOST_NAME Log_Date Log_Time Log_Str
+
+    getpassword Passwd_File HOST_USER_1 HOST_PASS_1
+    if !result then
+    	messagebox 'Password was not saved' 'ERROR'
+    endif
 
     ;; SSH接続用のコマンドを生成し、接続する。
     sprintf2 COMMAND '%s /ssh /2 /nosecuritywarning /auth=%s /user=%s /passwd=%s' HOST_IP_1 AUTHTYPE HOST_USER_1 HOST_PASS_1

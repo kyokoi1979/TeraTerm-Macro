@@ -1,0 +1,6 @@
+#表示名	ログインIP①	OS種別①	ログインユーザ①	ログインIP②	OS種別②	ログインユーザ②
+サーバ#1	192.168.1.1	Linux	user			
+サーバ#2	192.168.1.2	Linux	user			
+サーバ#3	192.168.1.1	Linux	user	192.168.1.3	Linux	user
+サーバ#4	192.168.1.1	Linux	user	192.168.1.4	Linux	user
+サーバ#5	192.168.1.1	Linux	user	192.168.1.5	Linux	user

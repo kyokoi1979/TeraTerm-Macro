@@ -1,0 +1,16 @@
+;; パスワードを暗号化して保存する
+
+getdir Current_Dir
+sprintf2 Passwd_File '%s\conf\password.dat' Current_Dir
+
+inputbox 'パスワードを設定するユーザー名を入力して下さい。' '"ユーザー名入力"'
+user = inputstr
+
+passwordbox 'パスワードを入力して下さい。' '"パスワード入力"'
+passwd = inputstr
+
+setpassword Passwd_File user passwd
+if !result then
+  messagebox 'パスワードが保存できませんでした。' 'ERROR'
+endif
+

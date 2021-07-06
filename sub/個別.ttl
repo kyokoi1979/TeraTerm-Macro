@@ -1,23 +1,23 @@
 ;; ホストリストが存在しない場合はダイアログから選択
-filesearch HOST_FILE
+filesearch Host_File
 if result = 0 then
   filenamebox 'ホストリストを選択してください' 0
   HOST_FILE = inputstr
-  fileopen HOST_LIST HOST_FILE 0
+  fileopen Host_List Host_File 0
 else
-  fileopen HOST_LIST HOST_FILE 0
+  fileopen Host_List Host_File 0
 endif
 
 ;; ホストリストの行数を取得する。
 i = 0
 while
-  filereadln HOST_LIST HOST_LIST_LINE
+  filereadln Host_List Host_List_Line
   if result=1 then
     break
   endif
   i=i+1
 endwhile
-fileclose HOST_LIST
+fileclose Host_List
 
 ;; 配列を作成
 strdim HOST_LIST_NAME i
@@ -27,59 +27,53 @@ strdim HOST_LIST_OS_1 i
 strdim HOST_LIST_OS_2 i
 strdim HOST_LIST_USER_1 i
 strdim HOST_LIST_USER_2 i
-strdim HOST_LIST_PASS_1 i
-strdim HOST_LIST_PASS_2 i
 
 ;; ホストリストを読み込む
-fileopen HOST_LIST HOST_FILE 0
+fileopen Host_List Host_File 0
 i = 0
 while
-  filereadln HOST_LIST HOST_LIST_LINE
+  filereadln Host_List Host_List_Line
   if result=1 then
     break
   endif
  
 ; ホストリストから情報を取得する
-  strmatch HOST_LIST_LINE '^#|^\t'
+  strmatch Host_List_Line '^#|^\t'
   if result<>1 then
-    strsplit HOST_LIST_LINE '	'
+    strsplit Host_List_Line '	'
     HOST_LIST_NAME[i]    = Groupmatchstr1
     HOST_LIST_IP_1[i]    = Groupmatchstr2
     HOST_LIST_OS_1[i]    = Groupmatchstr3
     HOST_LIST_USER_1[i]  = Groupmatchstr4
-    HOST_LIST_PASS_1[i]  = Groupmatchstr5
-    HOST_LIST_IP_2[i]    = Groupmatchstr6
-    HOST_LIST_OS_2[i]    = Groupmatchstr7
-    HOST_LIST_USER_2[i]  = Groupmatchstr8
-    HOST_LIST_PASS_2[i]  = Groupmatchstr9
+    HOST_LIST_IP_2[i]    = Groupmatchstr5
+    HOST_LIST_OS_2[i]    = Groupmatchstr6
+    HOST_LIST_USER_2[i]  = Groupmatchstr7
     
     i=i+1
   endif
 endwhile
  
 ;; ホスト選択画面を表示させる
-listbox 'ログインするホストを選択' 'Select HOST' HOST_LIST_NAME
+listbox 'ログインするホストを選択' 'Select HOST' Host_List_Name
 if result >= 0 then
   HOST_NAME   = HOST_LIST_NAME[result]
   HOST_IP_1   = HOST_LIST_IP_1[result]
   HOST_OS_1   = HOST_LIST_OS_1[result]
   HOST_USER_1 = HOST_LIST_USER_1[result]
-  HOST_PASS_1 = HOST_LIST_PASS_1[result]
   HOST_IP_2   = HOST_LIST_IP_2[result]
   HOST_OS_2   = HOST_LIST_OS_2[result]
   HOST_USER_2 = HOST_LIST_USER_2[result]
-  HOST_PASS_2 = HOST_LIST_PASS_2[result]
 
   ;; OSに応じて認証方法を変更する
   strmatch HOST_OS_1 'Linux'
   if result > 0 then
-    PROMPT = Linux_PROMPT
-    AUTHTYPE = Linux_AUTHTYPE
+    PROMPT = Linux_Prompt
+    AUTHTYPE = Linux_Authtype
   endif
   strmatch HOST_OS_1 'ESX'
   if result > 0 then
-    PROMPT = ESX_PROMPT
-    AUTHTYPE = ESX_AUTHTYPE
+    PROMPT = ESX_Prompt
+    AUTHTYPE = ESX_Authtype
   endif
 
 else
@@ -89,6 +83,11 @@ endif
 ;; ログファイル名を設定する
 gettime Log_Time '%H%M%S'
 sprintf2 Log_File '%s\%s_%s_%s_%s.log' Log_Path HOST_NAME Log_Date Log_Time Log_Str
+
+getpassword Passwd_File HOST_USER_1 HOST_PASS_1
+if !result then
+	messagebox 'Password was not saved' 'ERROR'
+endif
 
 ;; SSH接続用のコマンドを生成し、接続する。
 sprintf2 COMMAND '%s /ssh /2 /nosecuritywarning /auth=%s /user=%s /passwd=%s' HOST_IP_1 AUTHTYPE HOST_USER_1 HOST_PASS_1

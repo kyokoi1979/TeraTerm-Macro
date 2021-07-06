@@ -1,27 +1,24 @@
 ;; ログイン用マクロ.ttl
-INI       = 'TERATERM.INI'
 TIMEOUT   = 60
 
 ;; 認証方法
 ;; password  ⇒ パスワード
 ;; challenge ⇒ チャレンジレスポンス/キーボードインタラクティブ
-Linux_AUTHTYPE = 'password'
-ESX_AUTHTYPE   = 'challenge'
+Linux_Authtype = 'password'
+ESX_Authtype   = 'challenge'
 
 ;; 各OSのプロンプトを定義
-Linux_PROMPT = '.*\][$|#]'
-ESX_PROMPT   = '\[.*\] '
+Linux_Prompt = '.*\][$|#]'
+ESX_Prompt   = '\[.*\] '
 
-;; リストファイルはマクロと同じディレクトリから取得
+;; 各設定ファイル等のパスを指定
 getdate Log_Date  '%Y%m%d'
 getdir Current_Dir
 sprintf2 Cmd_Path '%s\cmdlist\command' Current_Dir
 sprintf2 Log_Path '%s\log\%s' Current_Dir Log_Date
-
-HOST_FILE = Current_Dir
-HOST      = 'host.list'
-makepath  HOST_FILE Current_Dir HOST
-makepath  INI_FILE  Current_Dir INI
+sprintf2 Passwd_File '%s\conf\password.dat' Current_Dir
+sprintf2 Host_File '%s\conf\host.list' Current_Dir
+sprintf2 Ini_File '%s\conf\TERATERM.INI' Current_Dir
 
 ;; ログディレクトリ作成
 ;; ディレクトリを作成できない場合、同名のファイルが存在する場合は終了
