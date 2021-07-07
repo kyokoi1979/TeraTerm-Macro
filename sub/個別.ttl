@@ -93,5 +93,31 @@ endif
 sprintf2 COMMAND '%s /ssh /2 /nosecuritywarning /auth=%s /user=%s /passwd=%s' HOST_IP_1 AUTHTYPE HOST_USER_1 HOST_PASS_1
 connect COMMAND
 
+TIMEOUT = 5
+waitregex PROMPT
+if result = 0 then 
+    logclose
+    messagebox 'ê⁄ë±Ç…é∏îsÇµÇ‹ÇµÇΩ' 'ÉGÉâÅ['
+    strconcat Log_File '.error'
+    logopen Log_File 0 1 1 1 
+    logwrite '*********************************'#13#10
+    logwrite 'Hostname:'
+    logwrite HOST_NAME
+    logwrite #13#10
+    logwrite 'UserName:'
+    logwrite HOST_USER_1
+    logwrite #13#10
+    logwrite 'Execution time :'
+    sprintf2 str '%s %s ' Log_Date Log_Time
+    logwrite str
+    logwrite #13#10
+    logwrite '*********************************'#13#10
+    logclose
+    disconnect 
+    end 
+endif
+
+TIMEOUT = Default_Timeout
+
 include 'sub/SSH_Login.ttl'
 call SSH_Login
