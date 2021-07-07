@@ -10,6 +10,37 @@ logopen Log_File 0 1 1 1 1
 
 strmatch HOST_OS_1 'Linux'
 if result > 0 then
+  ;; 踏み台を経由しないログインの場合、ホスト名チェックを行う
+  strlen HOST_IP_2
+  if result = 0 then
+    waitregex PROMPT
+    sendln 'hostname -s'
+    recvln
+    recvln
+    name=inputstr
+    strcompare name Host_name
+    if result <> 0 then
+      messagebox 'ログインしているホスト名が異なります。' ''
+      logwrite #13#10
+      logwrite '*********************************'#13#10
+      logwrite 'ホストリストとログイン先のホスト名が一致しません'#13#10
+      logwrite 'Hostname(host.list): '
+      logwrite HOST_NAME
+      logwrite #13#10
+      logwrite 'Hostname(ログイン先): '
+      logwrite name
+      logwrite #13#10
+      logwrite '*********************************'#13#10
+
+      if kobetsu = 1 then
+        end
+      else
+        unlink
+        return
+      endif
+    endif
+  endif
+
   waitregex PROMPT
   sendln 'uname -a'
 
@@ -67,6 +98,33 @@ if result > 0 then
   else
       sendln HOST_PASS_2
       waitregex PROMPT
+  endif
+
+  waitregex PROMPT
+  sendln 'hostname -s'
+  recvln
+  recvln
+  name=inputstr
+  strcompare name Host_name
+  if result <> 0 then
+    messagebox 'ログインしているホスト名が異なります。' ''
+    logwrite #13#10
+    logwrite '*********************************'#13#10
+    logwrite 'ホストリストとログイン先のホスト名が一致しません'#13#10
+    logwrite 'Hostname(host.list): '
+    logwrite HOST_NAME
+    logwrite #13#10
+    logwrite 'Hostname(ログイン先): '
+    logwrite name
+    logwrite #13#10
+    logwrite '*********************************'#13#10
+
+    if kobetsu = 1 then
+      end
+    else
+      unlink
+      return
+    endif
   endif
 endif
 
