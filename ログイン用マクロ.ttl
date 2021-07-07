@@ -1,5 +1,6 @@
 ;; ログイン用マクロ.ttl
-TIMEOUT   = 60
+Default_Timeout = 60
+TIMEOUT = Default_Timeout
 
 ;; 認証方法
 ;; password  ⇒ パスワード

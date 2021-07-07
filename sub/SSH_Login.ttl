@@ -1,8 +1,8 @@
 :SSH_Login
 
 ;; TERATERM.INIを開き、ターミナルのタイトルを変更する。
-restoresetup INI_FILE
-settitle HOST_NAME
+restoresetup Ini_File
+settitle Host_Name
 
 ;; 開いているログがあれば閉じて指定したファイル名でオープン
 logclose
@@ -57,11 +57,20 @@ if result > 0 then
   getpassword PASSWD_FILE HOST_USER_2 HOST_PASS_2
   sprintf2 CMD 'ssh -o "StrictHostKeyChecking no" %s@%s' HOST_USER_2 HOST_IP_2
   sendln CMD
+  ;; パスワードなしでの認証か判別するため、５秒だけ待機する
+  ;; 判別後、タイムアウト値はデフォルトに戻す
+  TIMEOUT = 5
   waitregex 'Password' 'password' 'パスワード'
-  sendln HOST_PASS_2
-  waitregex PROMPT
-  sendln
+  if result = 0 then
+      sendln
+      waitregex PROMPT
+  else
+      sendln HOST_PASS_2
+      waitregex PROMPT
+  endif
 endif
+
+TIMEOUT = Default_Timeout
 
 ; コマンドリストを読み込み実行する
 ;; コマンドリストが存在しない場合はダイアログから選択
@@ -102,7 +111,7 @@ Cmd_List_File = ''
 
 if kobetsu = 1 then
     messagebox 'マクロの実行が完了しました。' ''
-   end
+    end
 else
   unlink
   return
