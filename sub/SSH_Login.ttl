@@ -2,7 +2,7 @@
 
 ;; TERATERM.INIを開き、ターミナルのタイトルを変更する。
 restoresetup Ini_File
-settitle Host_Name
+settitle Host_Display
 
 ;; 開いているログがあれば閉じて指定したファイル名でオープン
 logclose
@@ -85,7 +85,9 @@ if result > 0 then
     PROMPT = ESX_Prompt
   endif
 
-  getpassword PASSWD_FILE HOST_USER_2 HOST_PASS_2
+  sprintf2 Passwd_File_User_2 '%s___%s' HOST_IP_2 HOST_USER_2
+  getpassword Passwd_File Passwd_File_User_2 HOST_PASS_2
+
   sprintf2 CMD 'ssh -o "StrictHostKeyChecking no" %s@%s' HOST_USER_2 HOST_IP_2
   sendln CMD
   ;; パスワードなしでの認証か判別するため、５秒だけ待機する

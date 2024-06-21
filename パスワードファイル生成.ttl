@@ -3,13 +3,18 @@
 getdir Current_Dir
 sprintf2 Passwd_File '%s\conf\password.dat' Current_Dir
 
-inputbox 'パスワードを設定するユーザー名を入力して下さい。' '"ユーザー名入力"'
+inputbox 'パスワードを設定する接続先(IP or ホスト名)を指定してください' '接続先を入力'
+host = inputstr
+
+inputbox 'パスワードを設定するユーザー名を入力して下さい。' 'ユーザー名入力'
 user = inputstr
+
+sprintf2 host_user '%s___%s' host user
 
 passwordbox 'パスワードを入力して下さい。' '"パスワード入力"'
 passwd = inputstr
 
-setpassword Passwd_File user passwd
+setpassword Passwd_File host_user passwd
 if !result then
   messagebox 'パスワードが保存できませんでした。' 'ERROR'
 endif

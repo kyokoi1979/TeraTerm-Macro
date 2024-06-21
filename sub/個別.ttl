@@ -1,14 +1,14 @@
-;; ƒzƒXƒgƒŠƒXƒg‚ª‘¶İ‚µ‚È‚¢ê‡‚Íƒ_ƒCƒAƒƒO‚©‚ç‘I‘ğ
+;; ãƒ›ã‚¹ãƒˆãƒªã‚¹ãƒˆãŒå­˜åœ¨ã—ãªã„å ´åˆã¯ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‹ã‚‰é¸æŠ
 filesearch Host_File
 if result = 0 then
-  filenamebox 'ƒzƒXƒgƒŠƒXƒg‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢' 0
+  filenamebox 'ãƒ›ã‚¹ãƒˆãƒªã‚¹ãƒˆã‚’é¸æŠã—ã¦ãã ã•ã„' 0
   HOST_FILE = inputstr
   fileopen Host_List Host_File 0
 else
   fileopen Host_List Host_File 0
 endif
 
-;; ƒzƒXƒgƒŠƒXƒg‚Ìs”‚ğæ“¾‚·‚éB
+;; ãƒ›ã‚¹ãƒˆãƒªã‚¹ãƒˆã®è¡Œæ•°ã‚’å–å¾—ã™ã‚‹ã€‚
 i = 0
 while
   filereadln Host_List Host_List_Line
@@ -19,7 +19,8 @@ while
 endwhile
 fileclose Host_List
 
-;; ”z—ñ‚ğì¬
+;; é…åˆ—ã‚’ä½œæˆ
+strdim HOST_LIST_DISPLAY i
 strdim HOST_LIST_NAME i
 strdim HOST_LIST_IP_1 i
 strdim HOST_LIST_IP_2 i
@@ -28,7 +29,7 @@ strdim HOST_LIST_OS_2 i
 strdim HOST_LIST_USER_1 i
 strdim HOST_LIST_USER_2 i
 
-;; ƒzƒXƒgƒŠƒXƒg‚ğ“Ç‚İ‚Ş
+;; ãƒ›ã‚¹ãƒˆãƒªã‚¹ãƒˆã‚’èª­ã¿è¾¼ã‚€
 fileopen Host_List Host_File 0
 i = 0
 while
@@ -37,25 +38,27 @@ while
     break
   endif
  
-; ƒzƒXƒgƒŠƒXƒg‚©‚çî•ñ‚ğæ“¾‚·‚é
+; ãƒ›ã‚¹ãƒˆãƒªã‚¹ãƒˆã‹ã‚‰æƒ…å ±ã‚’å–å¾—ã™ã‚‹
   strmatch Host_List_Line '^#|^\t'
   if result<>1 then
     strsplit Host_List_Line '	'
-    HOST_LIST_NAME[i]    = Groupmatchstr1
-    HOST_LIST_IP_1[i]    = Groupmatchstr2
-    HOST_LIST_OS_1[i]    = Groupmatchstr3
-    HOST_LIST_USER_1[i]  = Groupmatchstr4
-    HOST_LIST_IP_2[i]    = Groupmatchstr5
-    HOST_LIST_OS_2[i]    = Groupmatchstr6
-    HOST_LIST_USER_2[i]  = Groupmatchstr7
+    HOST_LIST_DISPLAY[i]    = Groupmatchstr1
+    HOST_LIST_NAME[i]    = Groupmatchstr2
+    HOST_LIST_IP_1[i]    = Groupmatchstr3
+    HOST_LIST_OS_1[i]    = Groupmatchstr4
+    HOST_LIST_USER_1[i]  = Groupmatchstr5
+    HOST_LIST_IP_2[i]    = Groupmatchstr6
+    HOST_LIST_OS_2[i]    = Groupmatchstr7
+    HOST_LIST_USER_2[i]  = Groupmatchstr8
     
     i=i+1
   endif
 endwhile
  
-;; ƒzƒXƒg‘I‘ğ‰æ–Ê‚ğ•\¦‚³‚¹‚é
-listbox 'ƒƒOƒCƒ“‚·‚éƒzƒXƒg‚ğ‘I‘ğ' 'Select HOST' Host_List_Name
+;; ãƒ›ã‚¹ãƒˆé¸æŠç”»é¢ã‚’è¡¨ç¤ºã•ã›ã‚‹
+listbox 'ãƒ­ã‚°ã‚¤ãƒ³ã™ã‚‹ãƒ›ã‚¹ãƒˆã‚’é¸æŠ' 'Select HOST' Host_List_Display
 if result >= 0 then
+  HOST_DISPLAY= HOST_LIST_DISPLAY[result]
   HOST_NAME   = HOST_LIST_NAME[result]
   HOST_IP_1   = HOST_LIST_IP_1[result]
   HOST_OS_1   = HOST_LIST_OS_1[result]
@@ -64,7 +67,7 @@ if result >= 0 then
   HOST_OS_2   = HOST_LIST_OS_2[result]
   HOST_USER_2 = HOST_LIST_USER_2[result]
 
-  ;; OS‚É‰‚¶‚Ä”FØ•û–@‚ğ•ÏX‚·‚é
+  ;; OSã«å¿œã˜ã¦èªè¨¼æ–¹æ³•ã‚’å¤‰æ›´ã™ã‚‹
   strmatch HOST_OS_1 'Linux'
   if result > 0 then
     PROMPT = Linux_Prompt
@@ -80,16 +83,17 @@ else
   end
 endif
 
-;; ƒƒOƒtƒ@ƒCƒ‹–¼‚ğİ’è‚·‚é
+;; ãƒ­ã‚°ãƒ•ã‚¡ã‚¤ãƒ«åã‚’è¨­å®šã™ã‚‹
 gettime Log_Time '%H%M%S'
 sprintf2 Log_File '%s\%s_%s_%s_%s.log' Log_Path HOST_NAME Log_Date Log_Time Log_Str
 
-getpassword Passwd_File HOST_USER_1 HOST_PASS_1
+sprintf2 Passwd_File_User '%s___%s' HOST_IP_1 HOST_USER_1
+getpassword Passwd_File Passwd_File_User HOST_PASS_1
 if !result then
 	messagebox 'Password was not saved' 'ERROR'
 endif
 
-;; SSHÚ‘±—p‚ÌƒRƒ}ƒ“ƒh‚ğ¶¬‚µAÚ‘±‚·‚éB
+;; SSHæ¥ç¶šç”¨ã®ã‚³ãƒãƒ³ãƒ‰ã‚’ç”Ÿæˆã—ã€æ¥ç¶šã™ã‚‹ã€‚
 sprintf2 COMMAND '%s /ssh /2 /nosecuritywarning /auth=%s /user=%s /passwd=%s' HOST_IP_1 AUTHTYPE HOST_USER_1 HOST_PASS_1
 connect COMMAND
 
@@ -97,7 +101,7 @@ TIMEOUT = 5
 waitregex PROMPT
 if result = 0 then 
     logclose
-    messagebox 'Ú‘±‚É¸”s‚µ‚Ü‚µ‚½' 'ƒGƒ‰['
+    messagebox 'æ¥ç¶šã«å¤±æ•—ã—ã¾ã—ãŸ' 'ã‚¨ãƒ©ãƒ¼'
     strconcat Log_File '.error'
     logopen Log_File 0 1 1 1 
     logwrite '*********************************'#13#10

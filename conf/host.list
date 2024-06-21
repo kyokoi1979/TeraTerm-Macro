@@ -1,6 +1,2 @@
-#•\¦–¼	ƒƒOƒCƒ“IP‡@	OSí•Ê‡@	ƒƒOƒCƒ“ƒ†[ƒU‡@	ƒƒOƒCƒ“IP‡A	OSí•Ê‡A	ƒƒOƒCƒ“ƒ†[ƒU‡A
-ƒT[ƒo#1	192.168.1.1	Linux	user			
-ƒT[ƒo#2	192.168.1.2	Linux	user			
-ƒT[ƒo#3	192.168.1.1	Linux	user	192.168.1.3	Linux	user
-ƒT[ƒo#4	192.168.1.1	Linux	user	192.168.1.4	Linux	user
-ƒT[ƒo#5	192.168.1.1	Linux	user	192.168.1.5	Linux	user
+#è¡¨ç¤ºå	ãƒ›ã‚¹ãƒˆå	ãƒ­ã‚°ã‚¤ãƒ³IPâ‘ 	OSç¨®åˆ¥â‘ 	ãƒ­ã‚°ã‚¤ãƒ³ãƒ¦ãƒ¼ã‚¶â‘ 	ãƒ­ã‚°ã‚¤ãƒ³IPâ‘¡	OSç¨®åˆ¥â‘¡	ãƒ­ã‚°ã‚¤ãƒ³ãƒ¦ãƒ¼ã‚¶â‘¡
+Server1	test-server	10.0.0.1	Linux	root			

@@ -1,18 +1,18 @@
-;; ƒƒOƒCƒ“—pƒ}ƒNƒ.ttl
+;; ãƒ­ã‚°ã‚¤ãƒ³ç”¨ãƒã‚¯ãƒ­.ttl
 Default_Timeout = 60
 TIMEOUT = Default_Timeout
 
-;; ”FØ•û–@
-;; password  Ë ƒpƒXƒ[ƒh
-;; challenge Ë ƒ`ƒƒƒŒƒ“ƒWƒŒƒXƒ|ƒ“ƒX/ƒL[ƒ{[ƒhƒCƒ“ƒ^ƒ‰ƒNƒeƒBƒu
+;; èªè¨¼æ–¹æ³•
+;; password  â‡’ ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰
+;; challenge â‡’ ãƒãƒ£ãƒ¬ãƒ³ã‚¸ãƒ¬ã‚¹ãƒãƒ³ã‚¹/ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ã‚¤ãƒ³ã‚¿ãƒ©ã‚¯ãƒ†ã‚£ãƒ–
 Linux_Authtype = 'password'
 ESX_Authtype   = 'challenge'
 
-;; ŠeOS‚Ìƒvƒƒ“ƒvƒg‚ğ’è‹`
+;; å„OSã®ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã‚’å®šç¾©
 Linux_Prompt = '.*\][$|#]'
 ESX_Prompt   = '\[.*\] '
 
-;; Šeİ’èƒtƒ@ƒCƒ‹“™‚ÌƒpƒX‚ğw’è
+;; å„è¨­å®šãƒ•ã‚¡ã‚¤ãƒ«ç­‰ã®ãƒ‘ã‚¹ã‚’æŒ‡å®š
 getdate Log_Date  '%Y%m%d'
 getdir Current_Dir
 sprintf2 Cmd_Path '%s\cmdlist\command' Current_Dir
@@ -21,8 +21,8 @@ sprintf2 Passwd_File '%s\conf\password.dat' Current_Dir
 sprintf2 Host_File '%s\conf\host.list' Current_Dir
 sprintf2 Ini_File '%s\conf\TERATERM.INI' Current_Dir
 
-;; ƒƒOƒfƒBƒŒƒNƒgƒŠì¬
-;; ƒfƒBƒŒƒNƒgƒŠ‚ğì¬‚Å‚«‚È‚¢ê‡A“¯–¼‚Ìƒtƒ@ƒCƒ‹‚ª‘¶İ‚·‚éê‡‚ÍI—¹
+;; ãƒ­ã‚°ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªä½œæˆ
+;; ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ä½œæˆã§ããªã„å ´åˆã€åŒåã®ãƒ•ã‚¡ã‚¤ãƒ«ãŒå­˜åœ¨ã™ã‚‹å ´åˆã¯çµ‚äº†
 filesearch Log_Path
 if result=1 then
   foldersearch Log_Path
@@ -35,20 +35,20 @@ else
   foldercreate Log_Path
 
   if result <> 0 then
-    messagebox 'ƒƒOƒfƒBƒŒƒNƒgƒŠ‚ğì¬‚Å‚«‚Ü‚¹‚ñB' ''
+    messagebox 'ãƒ­ã‚°ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ä½œæˆã§ãã¾ã›ã‚“ã€‚' ''
     end
   endif
 endif
 
-inputbox '"ì‹Æ–¼"‚ğ“ü—Í‚µ‚Ä‰º‚³‚¢B' '"ì‹Æ–¼"'
+inputbox '"ä½œæ¥­å"ã‚’å…¥åŠ›ã—ã¦ä¸‹ã•ã„ã€‚' '"ä½œæ¥­å"'
 Log_Str = inputstr
 
-;; ˆêŠ‡orŒÂ•ÊƒƒOƒCƒ“‚Ì‘I‘ğ
+;; ä¸€æ‹¬orå€‹åˆ¥ãƒ­ã‚°ã‚¤ãƒ³ã®é¸æŠ
 strdim lst 2
-lst[0] = 'ŒÂ•Ê'
-lst[1] = '‚Ü‚Æ‚ß‚Ä'
-listbox 'ƒƒOƒCƒ“•û–@‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢B' 'ƒƒOƒCƒ“•û–@' lst
-if result = -1 then ;; ƒLƒƒƒ“ƒZƒ‹
+lst[0] = 'å€‹åˆ¥'
+lst[1] = 'ã¾ã¨ã‚ã¦'
+listbox 'ãƒ­ã‚°ã‚¤ãƒ³æ–¹æ³•ã‚’é¸æŠã—ã¦ãã ã•ã„ã€‚' 'ãƒ­ã‚°ã‚¤ãƒ³æ–¹æ³•' lst
+if result = -1 then ;; ã‚­ãƒ£ãƒ³ã‚»ãƒ«
   end
 elseif result = 0 then
   mode = 1
@@ -59,7 +59,7 @@ elseif result = 1 then
 endif
 
 if mode = 1 then
-  include 'sub/ŒÂ•Ê.ttl'
+  include 'sub/å€‹åˆ¥.ttl'
 elseif mode = 2 then
-  include 'sub/ˆêŠ‡.ttl'
+  include 'sub/ä¸€æ‹¬.ttl'
 endif
