@@ -1,2 +1,6 @@
 #表示名	ホスト名	ログインIP①	OS種別①	ログインユーザ①	ログインIP②	OS種別②	ログインユーザ②
-Server1	test-server	10.0.0.1	Linux	root			
+検証用	test	192.168.0.1	Linux	test
+							
+							
+							
+							
