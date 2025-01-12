@@ -1,21 +1,42 @@
-;; パスワードを暗号化して保存する
+﻿;; パスワードを暗号化して保存する
 
-getdir Current_Dir
-sprintf2 Passwd_File '%s\conf\password.dat' Current_Dir
+getdir Macro_Dir
+sprintf2 Passwd_File '%s\conf\password.dat' Macro_Dir
+sprintf2 Passwd_List '%s\passwordlist.csv' Macro_Dir
+sep = ','
 
-inputbox 'パスワードを設定する接続先(IP or ホスト名)を指定してください' '接続先を入力'
-host = inputstr
-
-inputbox 'パスワードを設定するユーザー名を入力して下さい。' 'ユーザー名入力'
-user = inputstr
-
-sprintf2 host_user '%s___%s' host user
-
-passwordbox 'パスワードを入力して下さい。' '"パスワード入力"'
-passwd = inputstr
-
-setpassword Passwd_File host_user passwd
-if !result then
-  messagebox 'パスワードが保存できませんでした。' 'ERROR'
+filesearch Passwd_List
+if result = 0 then
+  filenamebox 'CSVファイルを選択してください' 0
+  Passwd_List = inputstr
 endif
 
+fileopen f Passwd_List 0
+
+while 1
+  filereadln f buf
+  if result then
+    break
+  endif
+
+  strmatch buf '^#'
+  if result<>1 then
+    strsplit buf sep
+    IPADDR   = groupmatchstr1
+    USERNAME = groupmatchstr2
+    PASSWD   = groupmatchstr3
+  
+    sprintf2 host_user '%s___%s' IPADDR USERNAME
+    setpassword Passwd_File host_user PASSWD
+  
+    if !result then
+      messagebox 'パスワードが保存できませんでした。' 'エラー'
+      exit
+    endif
+    pause 1
+  endif
+endwhile
+
+fileclose f
+
+messagebox 'パスワードファイルを保存しました' '保存完了'
