@@ -1,4 +1,4 @@
-;; ホストリストが存在しない場合はダイアログから選択
+﻿;; ホストリストが存在しない場合はダイアログから選択
 filesearch Host_File
 if result = 0 then
   filenamebox 'ホストリストを選択してください' 0
@@ -25,7 +25,7 @@ filereadln Host_List Host_List_Line
     fileclose Host_List
     messagebox 'マクロの実行が完了しました' ''
     end
- 
+
   ; 対象機器に接続する
   :CONNECT_PROCESS
     ;; TABを区切りとして変数に代入する

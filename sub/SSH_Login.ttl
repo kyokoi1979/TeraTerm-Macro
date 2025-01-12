@@ -1,4 +1,4 @@
-:SSH_Login
+﻿:SSH_Login
 
 ;; TERATERM.INIを開き、ターミナルのタイトルを変更する。
 restoresetup Ini_File

@@ -1,4 +1,4 @@
-;; ログイン用マクロ.ttl
+﻿;; ログイン用マクロ.ttl
 Default_Timeout = 60
 TIMEOUT = Default_Timeout
 
@@ -12,30 +12,58 @@ ESX_Authtype   = 'challenge'
 Linux_Prompt = '.*\][$|#]'
 ESX_Prompt   = '\[.*\] '
 
+;; getpasswdの不具合対応
+getver version '5.3'
+if result < 0 then
+  msg = 'TeraTermを5.3以上に変更してください。\n日本語を含むパスにマクロを保存しないでください。'
+  strspecial msg
+  statusbox msg 'バージョンチェック'
+  pause 5
+  closesbox
+endif
+
 ;; 各設定ファイル等のパスを指定
 getdate Log_Date  '%Y%m%d'
-getdir Current_Dir
-sprintf2 Cmd_Path '%s\cmdlist\command' Current_Dir
-sprintf2 Log_Path '%s\log\%s' Current_Dir Log_Date
-sprintf2 Passwd_File '%s\conf\password.dat' Current_Dir
-sprintf2 Host_File '%s\conf\host.list' Current_Dir
-sprintf2 Ini_File '%s\conf\TERATERM.INI' Current_Dir
+getdir Macro_Dir
+sprintf2 Cmd_Path '%s\cmdlist\command' Macro_Dir
+sprintf2 Log_Base '%s\log' Macro_Dir
+sprintf2 Log_Path '%s\%s' Log_Base Log_Date
+sprintf2 Passwd_File '%s\conf\password.dat' Macro_Dir
+sprintf2 Host_File '%s\conf\host.list' Macro_Dir
+sprintf2 Ini_File '%s\conf\TERATERM.INI' Macro_Dir
 
 ;; ログディレクトリ作成
 ;; ディレクトリを作成できない場合、同名のファイルが存在する場合は終了
+filesearch Log_Base
+if result=1 then
+  foldersearch Log_Base
+  if result <> 1 then
+    sprintf2 msg '%sはファイルです。別名にするか削除してください。' Log_Base
+    messagebox msg 'ディレクトリ作成エラー'
+    end
+  endif
+else
+  foldercreate Log_Base
+
+  if result <> 0 then
+    messagebox 'ログディレクトリを作成できません。' 'ディレクトリ作成エラー'
+    end
+  endif
+endif
+
 filesearch Log_Path
 if result=1 then
   foldersearch Log_Path
   if result <> 1 then
-    sprintf2 msg '%s is a file.' Log_Path
-    messagebox msg ''
+    sprintf2 msg '%sはファイルです。別名にするか削除してください。' Log_Path
+    messagebox msg Log_Path
     end
   endif
 else
   foldercreate Log_Path
 
   if result <> 0 then
-    messagebox 'ログディレクトリを作成できません。' ''
+    messagebox 'ログディレクトリを作成できません。' 'ディレクトリ作成エラー'
     end
   endif
 endif

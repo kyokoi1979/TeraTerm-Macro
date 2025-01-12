@@ -1,4 +1,4 @@
-;; ホストリストが存在しない場合はダイアログから選択
+﻿;; ホストリストが存在しない場合はダイアログから選択
 filesearch Host_File
 if result = 0 then
   filenamebox 'ホストリストを選択してください' 0
@@ -37,7 +37,7 @@ while
   if result=1 then
     break
   endif
- 
+
 ; ホストリストから情報を取得する
   strmatch Host_List_Line '^#|^\t'
   if result<>1 then
@@ -54,7 +54,7 @@ while
     i=i+1
   endif
 endwhile
- 
+
 ;; ホスト選択画面を表示させる
 listbox 'ログインするホストを選択' 'Select HOST' Host_List_Display
 if result >= 0 then
