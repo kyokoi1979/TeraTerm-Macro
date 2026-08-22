@@ -20,6 +20,7 @@ if result < 0 then
   statusbox msg 'バージョンチェック'
   pause 5
   closesbox
+  end
 endif
 
 ;; 各設定ファイル等のパスを指定
@@ -71,10 +72,11 @@ endif
 inputbox '"作業名"を入力して下さい。' '"作業名"'
 Log_Str = inputstr
 
-;; 一括or個別ログインの選択
-strdim lst 2
+;; 一括or個別or複数選択ログインの選択
+strdim lst 3
 lst[0] = '個別'
 lst[1] = 'まとめて'
+lst[2] = '複数選択'
 listbox 'ログイン方法を選択してください。' 'ログイン方法' lst
 if result = -1 then ;; キャンセル
   end
@@ -84,10 +86,15 @@ elseif result = 0 then
 elseif result = 1 then
   mode = 2
   kobetsu = 0
+elseif result = 2 then
+  mode = 3
+  kobetsu = 0
 endif
 
 if mode = 1 then
   include 'sub/個別.ttl'
 elseif mode = 2 then
   include 'sub/一括.ttl'
+elseif mode = 3 then
+  include 'sub/複数.ttl'
 endif

@@ -2,7 +2,7 @@
 filesearch Host_File
 if result = 0 then
   filenamebox 'ホストリストを選択してください' 0
-  HOST_FILE = inputstr
+  Host_File = inputstr
   fileopen Host_List Host_File 0
 else
   fileopen Host_List Host_File 0
@@ -38,25 +38,43 @@ while
     break
   endif
 
-; ホストリストから情報を取得する
-  strmatch Host_List_Line '^#|^\t'
-  if result<>1 then
-    strsplit Host_List_Line '	'
-    HOST_LIST_DISPLAY[i]    = Groupmatchstr1
-    HOST_LIST_NAME[i]    = Groupmatchstr2
-    HOST_LIST_IP_1[i]    = Groupmatchstr3
-    HOST_LIST_OS_1[i]    = Groupmatchstr4
-    HOST_LIST_USER_1[i]  = Groupmatchstr5
-    HOST_LIST_IP_2[i]    = Groupmatchstr6
-    HOST_LIST_OS_2[i]    = Groupmatchstr7
-    HOST_LIST_USER_2[i]  = Groupmatchstr8
-    
-    i=i+1
+; ホストリストから情報を取得する(空行はスキップする)
+  strlen Host_List_Line
+  if result <> 0 then
+    strmatch Host_List_Line '^#|^\t'
+    if result<>1 then
+      strsplit Host_List_Line '	'
+      HOST_LIST_DISPLAY[i]    = Groupmatchstr1
+      HOST_LIST_NAME[i]    = Groupmatchstr2
+      HOST_LIST_IP_1[i]    = Groupmatchstr3
+      HOST_LIST_OS_1[i]    = Groupmatchstr4
+      HOST_LIST_USER_1[i]  = Groupmatchstr5
+      HOST_LIST_IP_2[i]    = Groupmatchstr6
+      HOST_LIST_OS_2[i]    = Groupmatchstr7
+      HOST_LIST_USER_2[i]  = Groupmatchstr8
+
+      i=i+1
+    endif
   endif
+endwhile
+Host_Count = i
+
+if Host_Count = 0 then
+  messagebox 'ホストリストにログイン先がありません。' ''
+  end
+endif
+
+;; リスト表示用に「表示名 (ホスト名)」の配列を作る(有効な件数だけに絞る)
+strdim HOST_LIST_LABEL Host_Count
+j = 0
+while j < Host_Count
+  sprintf2 label '%s (%s)' HOST_LIST_DISPLAY[j] HOST_LIST_NAME[j]
+  HOST_LIST_LABEL[j] = label
+  j = j + 1
 endwhile
 
 ;; ホスト選択画面を表示させる
-listbox 'ログインするホストを選択' 'Select HOST' Host_List_Display
+listbox 'ログインするホストを選択' 'Select HOST' HOST_LIST_LABEL 0 'listboxsize=60x20'
 if result >= 0 then
   HOST_DISPLAY= HOST_LIST_DISPLAY[result]
   HOST_NAME   = HOST_LIST_NAME[result]

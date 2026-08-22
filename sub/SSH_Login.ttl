@@ -2,7 +2,7 @@
 
 ;; TERATERM.INIを開き、ターミナルのタイトルを変更する。
 restoresetup Ini_File
-settitle Host_Display
+settitle HOST_DISPLAY
 
 ;; 開いているログがあれば閉じて指定したファイル名でオープン
 logclose
@@ -18,7 +18,7 @@ if result > 0 then
     recvln
     recvln
     name=inputstr
-    strcompare name Host_name
+    strcompare name HOST_NAME
     if result <> 0 then
       messagebox 'ログインしているホスト名が異なります。' ''
       logwrite #13#10
@@ -51,13 +51,13 @@ if result > 0 then
   sendln 'date'
 
   waitregex PROMPT
+  sendln 'ps auxww'
+
+  waitregex PROMPT
   sendln 'df -Th'
 
   waitregex PROMPT
   sendln 'w'
-
-  waitregex PROMPT
-  sendln 'ps auxww'
 endif
 
 strmatch HOST_OS_1 'ESX'
@@ -73,7 +73,7 @@ if result > 0 then
 
   waitregex PROMPT
   sendln 'who'
-endif  
+endif
 
 ;; IP②が入力されている場合はSSHログインを実行する。
 strlen HOST_IP_2
@@ -107,7 +107,7 @@ if result > 0 then
   recvln
   recvln
   name=inputstr
-  strcompare name Host_name
+  strcompare name HOST_NAME
   if result <> 0 then
     messagebox 'ログインしているホスト名が異なります。' ''
     logwrite #13#10
@@ -146,7 +146,7 @@ if result > 0 then
   sprintf2 Cmd_List_File '%s_%s.list' Cmd_Path HOST_OS_2
 else
   sprintf2 Cmd_List_File '%s_%s.list' Cmd_Path HOST_OS_1
-endif 
+endif
 
 filesearch Cmd_List_File
 if result = 0 then
