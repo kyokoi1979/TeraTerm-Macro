@@ -25,10 +25,10 @@ while 1
     IPADDR   = groupmatchstr1
     USERNAME = groupmatchstr2
     PASSWD   = groupmatchstr3
-  
+
     sprintf2 host_user '%s___%s' IPADDR USERNAME
     setpassword Passwd_File host_user PASSWD
-  
+
     if !result then
       messagebox 'パスワードが保存できませんでした。' 'エラー'
       exit

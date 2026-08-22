@@ -90,5 +90,7 @@ filereadln Host_List Host_List_Line
       return
     endif
 
+    TIMEOUT = Default_Timeout
+
     include 'sub/SSH_Login.ttl'
     call SSH_Login
