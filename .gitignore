@@ -1,3 +1,4 @@
 log/*
 conf/password.dat
 passwordlist.csv
+conf/gui-settings.json

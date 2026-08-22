@@ -173,6 +173,22 @@ if kobetsu = 1 then
     messagebox 'マクロの実行が完了しました。' ''
     end
 else
+  if Is_Last_Host = 1 then
+    ;; 最後のホストの場合はunlinkせず、macroとウィンドウのリンクを
+    ;; 維持したまま呼び出し元へ戻る。呼び出し元(一括.ttl/複数.ttl)側で
+    ;; 完了メッセージを表示したあと、このリンクを使って
+    ;; callmenu Arrange_Menu_ID / callmenu Broadcast_Menu_ID で
+    ;; ウィンドウ整列・ブロードキャストダイアログを開く
+    ;; (どちらの値も sub/設定.ttl で定義。既定はSide by Side=50815 /
+    ;;  Broadcast command=50445。ちなみに重ねて表示は[Window] Cascade=50813)。
+    ;; (先にunlinkしてしまうとcallmenuが
+    ;;  「Link macro first. Use 'connect' macro.」エラーになる。
+    ;;  また、完了メッセージより先にブロードキャストダイアログを開くと、
+    ;;  完了メッセージがダイアログの後ろに埋もれてしまうため、
+    ;;  順序をあえて呼び出し元側に持たせている)
+    Last_Host_Linked = 1
+    return
+  endif
   unlink
   return
 endif
