@@ -1,16 +1,9 @@
 ﻿;; ログイン用マクロ.ttl
-Default_Timeout = 60
-TIMEOUT = Default_Timeout
 
-;; 認証方法
-;; password  ⇒ パスワード
-;; challenge ⇒ チャレンジレスポンス/キーボードインタラクティブ
-Linux_Authtype = 'password'
-ESX_Authtype   = 'challenge'
-
-;; 各OSのプロンプトを定義
-Linux_Prompt = '.*\][$|#]'
-ESX_Prompt   = '\[.*\] '
+;; タイムアウト・認証方法・プロンプト・ウィンドウ整列/ブロードキャストの
+;; メニューIDなど、変更する可能性がある設定は sub/設定.ttl にまとめてある。
+;; 挙動を変えたい場合はこのファイルではなく sub/設定.ttl を編集すること。
+include 'sub/設定.ttl'
 
 ;; getpasswdの不具合対応
 getver version '5.3'

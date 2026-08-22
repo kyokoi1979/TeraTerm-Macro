@@ -1,0 +1,36 @@
+﻿;; 設定.ttl
+;; ログイン用マクロで使う各種設定をまとめたファイル。
+;; ここを書き換えれば、マクロ本体(ログイン用マクロ.ttl・sub/*.ttl)を
+;; 直接編集しなくても挙動を変更できる。
+
+;; 接続タイムアウト(秒)
+Default_Timeout = 60
+TIMEOUT = Default_Timeout
+
+;; 認証方法
+;; password  ⇒ パスワード
+;; challenge ⇒ チャレンジレスポンス/キーボードインタラクティブ
+Linux_Authtype = 'password'
+ESX_Authtype   = 'challenge'
+
+;; 各OSのプロンプトを定義
+Linux_Prompt = '.*\][$|#]'
+ESX_Prompt   = '\[.*\] '
+
+;; ============================================================
+;; 一括ログイン・複数選択ログインで、最後のホストの処理が終わった直後に
+;; callmenuで呼び出すウィンドウ操作(sub/SSH_Login.ttl・sub/一括.ttl・
+;; sub/複数.ttl から参照される)。
+;;
+;; メニューIDは下記ページの「VT window」の一覧を参照。
+;; https://teratermproject.github.io/manual/5/ja/reference/menu_id.html
+;;
+;;   [Window]  Cascade               50813  ;; 重ねて表示
+;;   [Window]  Stacked               50814  ;; 上下に並べて表示
+;;   [Window]  Side by Side          50815  ;; 左右に並べて表示 (既定)
+;;   [Control] Broadcast command     50445  ;; ブロードキャストコマンドのダイアログを開く
+;;
+;; 例えば「重ねて表示」にしたい場合は、Arrange_Menu_ID の値を
+;; 50813 に変更するだけでよい。
+Arrange_Menu_ID   = 50815
+Broadcast_Menu_ID = 50445

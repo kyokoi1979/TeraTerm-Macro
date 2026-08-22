@@ -8,6 +8,29 @@ else
   fileopen Host_List Host_File 0
 endif
 
+;; 対象となるホストの総数をあらかじめ数えておく。
+;; (最後のホストの処理中、まだそのウィンドウとmacroが繋がっている間に
+;;  ウィンドウ整列・ブロードキャストダイアログを開きたいので、
+;;  何件目が最後かをあらかじめ知っておく必要がある)
+Host_Count_Total = 0
+filereadln Host_List Host_List_Line
+while result = 0
+  strlen Host_List_Line
+  if result <> 0 then
+    strmatch Host_List_Line '^#|^\t'
+    if result<>1 then
+      Host_Count_Total = Host_Count_Total + 1
+    endif
+  endif
+  filereadln Host_List Host_List_Line
+endwhile
+fileclose Host_List
+
+;; 数え終わったので、あらためて先頭から読み直す
+fileopen Host_List Host_File 0
+Processed_Count = 0
+Last_Host_Linked = 0
+
 filereadln Host_List Host_List_Line
   while result = 0
     ; ホストリストの最終行に到達したら終了する
@@ -16,7 +39,15 @@ filereadln Host_List Host_List_Line
 
     ; ホストリストの先頭が#, TAB以外の場合、対象機器にログインする
     strmatch Host_List_Line '^#|^\t'
-    if result<>1 call CONNECT_PROCESS
+    if result<>1 then
+      Processed_Count = Processed_Count + 1
+      if Processed_Count = Host_Count_Total then
+        Is_Last_Host = 1
+      else
+        Is_Last_Host = 0
+      endif
+      call CONNECT_PROCESS
+    endif
 
   ; マクロ終了
   :END
@@ -24,6 +55,18 @@ filereadln Host_List Host_List_Line
     endwhile
     fileclose Host_List
     messagebox 'マクロの実行が完了しました' ''
+
+    ;; 最後のホストとの接続がまだmacroとリンクされたままであれば
+    ;; (SSH_Login.ttl側でunlinkをスキップしている)、TeraTermの標準機能を
+    ;; 使ってウィンドウを整列し、ブロードキャストコマンドのダイアログを開く。
+    ;; メニューID(Arrange_Menu_ID / Broadcast_Menu_ID)は sub/設定.ttl で
+    ;; 定義しており、既定はSide by Side(50815) / Broadcast command(50445)。
+    ;; 対象ウィンドウの選択自体はダイアログ内で手動選択が必要。
+    if Last_Host_Linked = 1 then
+      callmenu Arrange_Menu_ID
+      callmenu Broadcast_Menu_ID
+    endif
+
     end
 
   ; 対象機器に接続する
