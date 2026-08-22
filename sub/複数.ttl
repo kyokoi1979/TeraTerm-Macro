@@ -124,16 +124,48 @@ if Selected_Count = 0 then
   end
 endif
 
+;; 選択された中で最後のホストのインデックスを求めておく。
+;; (そのホストのSSHログイン処理が終わった直後、まだmacroとウィンドウが
+;;  繋がっている間にウィンドウ整列・ブロードキャストダイアログを開きたい。
+;;  unlink後はcallmenuが「Link macro first」エラーになるため、
+;;  全処理が終わった後ではなく、最後のunlink直前に行う必要がある)
+Last_Selected_K = -1
+Last_Host_Linked = 0
+m = 0
+while m < Host_Count
+  if HOST_LIST_SELECTED[m] = 1 then
+    Last_Selected_K = m
+  endif
+  m = m + 1
+endwhile
+
 ;; 選択したホストへ順番にログインする
 k = 0
 while k < Host_Count
   if HOST_LIST_SELECTED[k] = 1 then
+    if k = Last_Selected_K then
+      Is_Last_Host = 1
+    else
+      Is_Last_Host = 0
+    endif
     call CONNECT_PROCESS
   endif
   k = k + 1
 endwhile
 
 messagebox 'マクロの実行が完了しました。' ''
+
+;; 最後に選ばれたホストとの接続がまだmacroとリンクされたままであれば
+;; (SSH_Login.ttl側でunlinkをスキップしている)、TeraTermの標準機能を
+;; 使ってウィンドウを整列し、ブロードキャストコマンドのダイアログを開く。
+;; メニューID(Arrange_Menu_ID / Broadcast_Menu_ID)は sub/設定.ttl で
+;; 定義しており、既定はSide by Side(50815) / Broadcast command(50445)。
+;; 対象ウィンドウの選択自体はダイアログ内で手動選択が必要。
+if Last_Host_Linked = 1 then
+  callmenu Arrange_Menu_ID
+  callmenu Broadcast_Menu_ID
+endif
+
 end
 
 ;; 対象機器に接続する(k番目のホストへ接続する)
