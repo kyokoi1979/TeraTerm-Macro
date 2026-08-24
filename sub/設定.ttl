@@ -14,7 +14,7 @@ Linux_Authtype = 'password'
 ESX_Authtype   = 'challenge'
 
 ;; 各OSのプロンプトを定義
-Linux_Prompt = '.*\][$|#]'
+Linux_Prompt = '[#$][ \t]*$'
 ESX_Prompt   = '\[.*\] '
 
 ;; ============================================================
